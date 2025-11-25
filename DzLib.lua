@@ -1133,7 +1133,7 @@ function Update:Window(Config)
 			DropdownFrameScroll.BackgroundColor3 = Color3.fromRGB(24, 24, 26);
 			DropdownFrameScroll.BackgroundTransparency = 0;
 			DropdownFrameScroll.ClipsDescendants = true;
-			DropdownFrameScroll.Size = UDim2.new(1, 0, 0, 100);
+			DropdownFrameScroll.Size = UDim2.new(1, 0, 0, 200);
 			DropdownFrameScroll.Position = UDim2.new(0, 5, 0, 40);
 			DropdownFrameScroll.Visible = false;
 			DropdownFrameScroll.AnchorPoint = Vector2.new(0, 0);
@@ -1147,7 +1147,7 @@ function Update:Window(Config)
 			DropScroll.BackgroundTransparency = 1;
 			DropScroll.BorderSizePixel = 0;
 			DropScroll.Position = UDim2.new(0, 0, 0, 10);
-			DropScroll.Size = UDim2.new(1, 0, 0, 80);
+			DropScroll.Size = UDim2.new(1, 0, 0, 180);
 			DropScroll.AnchorPoint = Vector2.new(0, 0);
 			DropScroll.ClipsDescendants = true;
 			DropScroll.ScrollBarThickness = 3;
