@@ -609,9 +609,24 @@ function Update:Window(Config)
 	UIPageLayout.ScrollWheelInputEnabled = false;
 	UIPageLayout.TouchInputEnabled = false;
 	MakeDraggable(Top, OutlineMain);
-	UserInputService.InputBegan:Connect(function(input)
+	local keybindDebounce = false;
+	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		-- Ignorar se o jogo processou o input (ex: chat aberto)
+		if gameProcessed then return end;
+		-- Debounce para evitar múltiplas ativações rápidas
+		if keybindDebounce then return end;
+		-- Verificar se é a tecla correta
 		if input.KeyCode == Enum.KeyCode.LeftControl then
-			(game.CoreGui:FindFirstChild("DzHub")).Enabled = not (game.CoreGui:FindFirstChild("DzHub")).Enabled;
+			keybindDebounce = true;
+			local dzHub = game.CoreGui:FindFirstChild("DzHub");
+			if dzHub then
+				dzHub.Enabled = not dzHub.Enabled;
+			end;
+			-- Resetar debounce após 0.2 segundos (sem bloquear o evento)
+			spawn(function()
+				task.wait(0.2);
+				keybindDebounce = false;
+			end);
 		end;
 	end);
 	local Dragging = false;
