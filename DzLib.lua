@@ -507,7 +507,8 @@ function Update:Window(Config)
 			Checkbox.ImageTransparency = 1;
 			Checkbox.BackgroundColor3 = Color3.fromRGB(100, 100, 100);
 		end;
-		pcall(callback, checked);
+		-- Não chamar callback durante inicialização - apenas definir visualmente
+		-- pcall(callback, checked);
 	end;
 	function CreateButton(title, callback)
 		local Background = Instance.new("Frame");
@@ -1121,7 +1122,8 @@ function Update:Window(Config)
 				CRNRitems.Parent = SelectedItems;
 				CRNRitems.CornerRadius = UDim.new(0, 999);
 				if var then
-					pcall(callback, var);
+					-- Não chamar callback durante inicialização - apenas definir visualmente
+					-- pcall(callback, var);
 					SelectItems.Text = "   " .. var;
 					activeItem = tostring(var);
 					for i, v in next, DropScroll:GetChildren() do
@@ -1366,9 +1368,10 @@ function Update:Window(Config)
 			local uis = game:GetService("UserInputService");
 			if Value == nil then
 				Value = set;
-				pcall(function()
-					callback(Value);
-				end);
+				-- Não chamar callback durante inicialização - apenas definir valor
+				-- pcall(function()
+				-- 	callback(Value);
+				-- end);
 			end;
 			local Dragging = false;
 			circlebar.InputBegan:Connect(function(Input)
