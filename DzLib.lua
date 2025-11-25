@@ -246,6 +246,8 @@ function Update:Window(Config)
 	local uitab = {};
 	uitab._ScrollTab = nil;
 	uitab._DzHub = DzHub;
+	-- Garantir que uitab sempre exista
+	assert(uitab ~= nil, "uitab não pode ser nil");
 	local OutlineMain = Instance.new("Frame");
 	OutlineMain.Name = "OutlineMain";
 	OutlineMain.Parent = DzHub;
@@ -562,10 +564,12 @@ function Update:Window(Config)
 	ScrollTab.ScrollBarThickness = 0;
 	ScrollTab.ScrollingDirection = Enum.ScrollingDirection.Y;
 	CreateRounded(Tab, 5);
-	-- Armazena referência com verificação de segurança
-	if uitab then
-		uitab._ScrollTab = ScrollTab;
+	-- Armazena referência - uitab sempre existe aqui (criado no início da função)
+	if uitab == nil then
+		uitab = {};
+		uitab._DzHub = DzHub;
 	end;
+	uitab._ScrollTab = ScrollTab;
 	local TabListLayout = Instance.new("UIListLayout");
 	TabListLayout.Name = "TabListLayout";
 	TabListLayout.Parent = ScrollTab;
