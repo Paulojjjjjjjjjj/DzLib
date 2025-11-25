@@ -176,8 +176,7 @@ function Update:Loaded()
 	-- Tela de loading removida - função vazia para compatibilidade
 end;
 local SettingsLib = {
-	SaveSettings = true,
-	Keybind = "LeftControl" -- Keybind padrão para minimizar/maximizar
+	SaveSettings = true
 };
 (getgenv()).LoadConfig = function()
 	if readfile and writefile and isfile and isfolder then
@@ -541,113 +540,6 @@ function Update:Window(Config)
 		SettingsLib.SaveSettings = state;
 		(getgenv()).SaveConfig();
 	end);
-	-- Função para criar dropdown simples nas configurações
-	local function CreateSettingsDropdown(title, options, currentValue, callback)
-		local Background = Instance.new("Frame");
-		Background.Name = "Background";
-		Background.Parent = ScrollSettings;
-		Background.ClipsDescendants = true;
-		Background.BackgroundColor3 = Color3.fromRGB(24, 24, 26);
-		Background.BackgroundTransparency = 1;
-		Background.Size = UDim2.new(1, 0, 0, 40);
-		local Title = Instance.new("TextLabel");
-		Title.Name = "Title";
-		Title.Parent = Background;
-		Title.BackgroundColor3 = Color3.fromRGB(255, 255, 255);
-		Title.BackgroundTransparency = 1;
-		Title.Position = UDim2.new(0, 0, 0, 0);
-		Title.Size = UDim2.new(0.5, 0, 0, 20);
-		Title.Font = Enum.Font.Code;
-		Title.AnchorPoint = Vector2.new(0, 0);
-		Title.Text = title or "";
-		Title.TextSize = 15;
-		Title.TextColor3 = Color3.fromRGB(200, 200, 200);
-		Title.TextXAlignment = Enum.TextXAlignment.Left;
-		local DropdownButton = Instance.new("TextButton");
-		DropdownButton.Name = "DropdownButton";
-		DropdownButton.Parent = Background;
-		DropdownButton.BackgroundColor3 = Color3.fromRGB(138, 43, 226);
-		DropdownButton.BackgroundTransparency = 0;
-		DropdownButton.Position = UDim2.new(0.5, 0, 0, 5);
-		DropdownButton.Size = UDim2.new(0.45, 0, 0, 30);
-		DropdownButton.Font = Enum.Font.Code;
-		DropdownButton.Text = currentValue or options[1] or "";
-		DropdownButton.TextColor3 = Color3.fromRGB(255, 255, 255);
-		DropdownButton.TextSize = 13;
-		DropdownButton.AutoButtonColor = false;
-		CreateRounded(DropdownButton, 5);
-		local DropdownFrame = Instance.new("Frame");
-		DropdownFrame.Name = "DropdownFrame";
-		DropdownFrame.Parent = Background;
-		DropdownFrame.BackgroundColor3 = Color3.fromRGB(24, 24, 26);
-		DropdownFrame.BackgroundTransparency = 0;
-		DropdownFrame.Position = UDim2.new(0.5, 0, 0, 35);
-		DropdownFrame.Size = UDim2.new(0.45, 0, 0, 0);
-		DropdownFrame.Visible = false;
-		DropdownFrame.ClipsDescendants = true;
-		CreateRounded(DropdownFrame, 5);
-		local DropdownScroll = Instance.new("ScrollingFrame");
-		DropdownScroll.Name = "DropdownScroll";
-		DropdownScroll.Parent = DropdownFrame;
-		DropdownScroll.BackgroundTransparency = 1;
-		DropdownScroll.Size = UDim2.new(1, 0, 1, 0);
-		DropdownScroll.ScrollBarThickness = 3;
-		DropdownScroll.CanvasSize = UDim2.new(0, 0, 0, 0);
-		local DropdownList = Instance.new("UIListLayout");
-		DropdownList.Parent = DropdownScroll;
-		DropdownList.SortOrder = Enum.SortOrder.LayoutOrder;
-		DropdownList.Padding = UDim.new(0, 2);
-		local isOpen = false;
-		DropdownButton.MouseButton1Click:Connect(function()
-			isOpen = not isOpen;
-			DropdownFrame.Visible = isOpen;
-			if isOpen then
-				local itemCount = #options;
-				DropdownFrame.Size = UDim2.new(0.45, 0, 0, math.min(itemCount * 30 + 10, 150));
-				DropdownScroll.CanvasSize = UDim2.new(0, 0, 0, itemCount * 30);
-				for i, option in ipairs(options) do
-					local Item = Instance.new("TextButton");
-					Item.Name = "Item";
-					Item.Parent = DropdownScroll;
-					Item.BackgroundColor3 = Color3.fromRGB(138, 43, 226);
-					Item.BackgroundTransparency = 0.8;
-					Item.Size = UDim2.new(1, -10, 0, 28);
-					Item.Font = Enum.Font.Code;
-					Item.Text = tostring(option);
-					Item.TextColor3 = Color3.fromRGB(255, 255, 255);
-					Item.TextSize = 12;
-					Item.AutoButtonColor = false;
-					CreateRounded(Item, 3);
-					Item.MouseButton1Click:Connect(function()
-						DropdownButton.Text = tostring(option);
-						DropdownFrame.Visible = false;
-						isOpen = false;
-						if callback then
-							callback(option);
-						end;
-					end);
-				end;
-			else
-				-- Limpar itens quando fechar
-				for i, v in ipairs(DropdownScroll:GetChildren()) do
-					if v:IsA("TextButton") then
-						v:Destroy();
-					end;
-				end;
-			end;
-		end);
-	end;
-	-- Lista de keybinds disponíveis
-	local keybindOptions = {
-		"LeftControl", "RightControl", "LeftShift", "RightShift",
-		"LeftAlt", "RightAlt", "Insert", "Delete", "Home", "End",
-		"PageUp", "PageDown", "F1", "F2", "F3", "F4", "F5"
-	};
-	CreateSettingsDropdown("Menu Keybind", keybindOptions, SettingsLib.Keybind, function(selected)
-		SettingsLib.Keybind = selected;
-		(getgenv()).SaveConfig();
-		Update:Notify("Keybind atualizada! Reinicie o script para aplicar.");
-	end);
 	CreateButton("Reset Config", function()
 		if isfolder("DzHub") then
 			delfolder("DzHub");
@@ -718,14 +610,8 @@ function Update:Window(Config)
 	UIPageLayout.TouchInputEnabled = false;
 	MakeDraggable(Top, OutlineMain);
 	UserInputService.InputBegan:Connect(function(input)
-		-- Usar keybind das configurações
-		local keybindName = SettingsLib.Keybind or "LeftControl";
-		local keybindEnum = Enum.KeyCode[keybindName];
-		if keybindEnum and input.KeyCode == keybindEnum then
-			local dzHub = game.CoreGui:FindFirstChild("DzHub");
-			if dzHub then
-				dzHub.Enabled = not dzHub.Enabled;
-			end;
+		if input.KeyCode == Enum.KeyCode.LeftControl then
+			(game.CoreGui:FindFirstChild("DzHub")).Enabled = not (game.CoreGui:FindFirstChild("DzHub")).Enabled;
 		end;
 	end);
 	local Dragging = false;
