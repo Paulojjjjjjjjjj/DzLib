@@ -75,7 +75,7 @@ ImageButton.Image = "rbxassetid://86862177543059";
 ImageButton.AutoButtonColor = false;
 MakeDraggable(ImageButton, OutlineButton);
 CreateRounded(ImageButton, 10);
-ImageButton.MouseButton1Click:connect(function()
+ImageButton.MouseButton1Click:Connect(function()
 	local dzHub = game.CoreGui:FindFirstChild("DzHub");
 	if dzHub then
 		dzHub.Enabled = not dzHub.Enabled;
@@ -334,7 +334,7 @@ function Update:Window(Config)
 	CloseButton.ImageTransparency = 0;
 	CloseButton.ImageColor3 = Color3.fromRGB(245, 245, 245);
 	CreateRounded(CloseButton, 3);
-	CloseButton.MouseButton1Click:connect(function()
+	CloseButton.MouseButton1Click:Connect(function()
 		-- Remove todos os elementos criados pela lib
 		local dzHub = game.CoreGui:FindFirstChild("DzHub");
 		if dzHub then
@@ -395,7 +395,7 @@ function Update:Window(Config)
 	CloseSettings.ImageTransparency = 0;
 	CloseSettings.ImageColor3 = Color3.fromRGB(245, 245, 245);
 	CreateRounded(CloseSettings, 3);
-	CloseSettings.MouseButton1Click:connect(function()
+	CloseSettings.MouseButton1Click:Connect(function()
 		BackgroundSettings.Visible = false;
 	end);
 	local SettingsButton = Instance.new("ImageButton");
@@ -410,7 +410,7 @@ function Update:Window(Config)
 	SettingsButton.ImageTransparency = 0;
 	SettingsButton.ImageColor3 = Color3.fromRGB(245, 245, 245);
 	CreateRounded(SettingsButton, 3);
-	SettingsButton.MouseButton1Click:connect(function()
+	SettingsButton.MouseButton1Click:Connect(function()
 		BackgroundSettings.Visible = true;
 	end);
 	local TitleSettings = Instance.new("TextLabel");
