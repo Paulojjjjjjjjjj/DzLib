@@ -50,6 +50,7 @@ function MakeDraggable(topbarobject, object)
 	end);
 end;
 local ScreenGui = Instance.new("ScreenGui");
+ScreenGui.Name = "DzHubMenuButton";
 ScreenGui.Parent = game.CoreGui;
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
 local OutlineButton = Instance.new("Frame");
@@ -75,7 +76,10 @@ ImageButton.AutoButtonColor = false;
 MakeDraggable(ImageButton, OutlineButton);
 CreateRounded(ImageButton, 10);
 ImageButton.MouseButton1Click:connect(function()
-	(game.CoreGui:FindFirstChild("DzHub")).Enabled = not (game.CoreGui:FindFirstChild("DzHub")).Enabled;
+	local dzHub = game.CoreGui:FindFirstChild("DzHub");
+	if dzHub then
+		dzHub.Enabled = not dzHub.Enabled;
+	end;
 end);
 local NotificationFrame = Instance.new("ScreenGui");
 NotificationFrame.Name = "NotificationFrame";
@@ -238,6 +242,10 @@ function Update:Window(Config)
 	DzHub.Name = "DzHub";
 	DzHub.Parent = game.CoreGui;
 	DzHub.DisplayOrder = 999;
+	-- Criar uitab logo no início para evitar problemas de escopo
+	local uitab = {};
+	uitab._ScrollTab = nil;
+	uitab._DzHub = DzHub;
 	local OutlineMain = Instance.new("Frame");
 	OutlineMain.Name = "OutlineMain";
 	OutlineMain.Parent = DzHub;
@@ -325,9 +333,18 @@ function Update:Window(Config)
 	CloseButton.ImageColor3 = Color3.fromRGB(245, 245, 245);
 	CreateRounded(CloseButton, 3);
 	CloseButton.MouseButton1Click:connect(function()
+		-- Remove todos os elementos criados pela lib
 		local dzHub = game.CoreGui:FindFirstChild("DzHub");
 		if dzHub then
 			dzHub:Destroy();
+		end;
+		local menuButton = game.CoreGui:FindFirstChild("DzHubMenuButton");
+		if menuButton then
+			menuButton:Destroy();
+		end;
+		local notificationFrame = game.CoreGui:FindFirstChild("NotificationFrame");
+		if notificationFrame then
+			notificationFrame:Destroy();
 		end;
 	end);
 	local ResizeButton = Instance.new("ImageButton");
@@ -545,7 +562,10 @@ function Update:Window(Config)
 	ScrollTab.ScrollBarThickness = 0;
 	ScrollTab.ScrollingDirection = Enum.ScrollingDirection.Y;
 	CreateRounded(Tab, 5);
-	uitab._ScrollTab = ScrollTab; -- Armazena referência
+	-- Armazena referência com verificação de segurança
+	if uitab then
+		uitab._ScrollTab = ScrollTab;
+	end;
 	local TabListLayout = Instance.new("UIListLayout");
 	TabListLayout.Name = "TabListLayout";
 	TabListLayout.Parent = ScrollTab;
@@ -608,9 +628,6 @@ function Update:Window(Config)
 			Tab.Size = UDim2.new(0, WindowConfig.TabWidth, 0, math.clamp(Input.Position.Y - Tab.AbsolutePosition.Y - 8, WindowConfig.Size.Y.Offset - Top.Size.Y.Offset - 10, math.huge));
 		end;
 	end);
-	local uitab = {};
-	uitab._ScrollTab = nil; -- Será definido depois
-	uitab._DzHub = DzHub; -- Armazena referência à janela
 	function uitab:Tab(text, img)
 		local BtnStroke = Instance.new("UIStroke");
 		local TabButton = Instance.new("TextButton");
