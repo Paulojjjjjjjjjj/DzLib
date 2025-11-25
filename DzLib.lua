@@ -1592,10 +1592,13 @@ function Update:Window(Config)
 			if dzHub then
 				local main = dzHub:FindFirstChild("OutlineMain");
 				if main then
-					local tabFrame = main:FindFirstChild("Main"):FindFirstChild("Tab");
-					if tabFrame then
-						scrollTab = tabFrame:FindFirstChild("ScrollTab");
-						self._ScrollTab = scrollTab; -- Armazena para próxima vez
+					local mainFrame = main:FindFirstChild("Main");
+					if mainFrame then
+						local tabFrame = mainFrame:FindFirstChild("Tab");
+						if tabFrame then
+							scrollTab = tabFrame:FindFirstChild("ScrollTab");
+							self._ScrollTab = scrollTab; -- Armazena para próxima vez
+						end;
 					end;
 				end;
 			end;
@@ -1608,8 +1611,79 @@ function Update:Window(Config)
 				end;
 			end;
 			if tabs[index] then
-				-- Simula um clique na aba
-				tabs[index].MouseButton1Click:Fire();
+				local TabButton = tabs[index];
+				local TweenService = game:GetService("TweenService");
+				-- Executa a mesma lógica do clique manualmente
+				for i, v in next, scrollTab:GetChildren() do
+					if v:IsA("TextButton") then
+						(TweenService:Create(v, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+							BackgroundTransparency = 1
+						})):Play();
+						if v:FindFirstChild("SelectedTab") then
+							(TweenService:Create(v.SelectedTab, TweenInfo.new(0, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+								Size = UDim2.new(0, 3, 0, 0)
+							})):Play();
+						end;
+						if v:FindFirstChild("IDK") then
+							(TweenService:Create(v.IDK, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+								ImageTransparency = 0.4
+							})):Play();
+						end;
+						if v:FindFirstChild("Title") then
+							(TweenService:Create(v.Title, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+								TextTransparency = 0.4
+							})):Play();
+						end;
+					end;
+				end;
+				-- Atualiza a aba selecionada
+				(TweenService:Create(TabButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+					BackgroundTransparency = 0.8
+				})):Play();
+				if TabButton:FindFirstChild("SelectedTab") then
+					(TweenService:Create(TabButton.SelectedTab, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+						Size = UDim2.new(0, 3, 0, 15)
+					})):Play();
+				end;
+				if TabButton:FindFirstChild("IDK") then
+					(TweenService:Create(TabButton.IDK, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+						ImageTransparency = 0
+					})):Play();
+				end;
+				if TabButton:FindFirstChild("Title") then
+					(TweenService:Create(TabButton.Title, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+						TextTransparency = 0
+					})):Play();
+				end;
+				-- Mostra a página correspondente
+				local dzHub = self._DzHub or game.CoreGui:FindFirstChild("DzHub");
+				if dzHub then
+					local main = dzHub:FindFirstChild("OutlineMain");
+					if main then
+						local mainFrame = main:FindFirstChild("Main");
+						if mainFrame then
+							local page = mainFrame:FindFirstChild("Page");
+							if page then
+								local mainPage = page:FindFirstChild("MainPage");
+								if mainPage then
+									local pageList = mainPage:FindFirstChild("PageList");
+									if pageList then
+										local currentpage = string.gsub(TabButton.Name, "Unique", "") .. "_Page";
+										for i, v in next, pageList:GetChildren() do
+											if v.Name == currentpage then
+												local uiPageLayout = pageList:FindFirstChildOfClass("UIPageLayout");
+												if uiPageLayout then
+													uiPageLayout:JumpTo(v);
+												end;
+												break;
+											end;
+										end;
+									end;
+								end;
+							end;
+						end;
+					end;
+				end;
 			end;
 		end;
 	end;
