@@ -298,7 +298,7 @@ function Update:Window(Config)
 	NameHub.BackgroundColor3 = Color3.fromRGB(255, 255, 255);
 	NameHub.BackgroundTransparency = 1;
 	NameHub.RichText = true;
-	NameHub.Position = UDim2.new(0, 15, 0.5, 0);
+	NameHub.Position = UDim2.new(0, 15, 0.5, 0)
 	NameHub.AnchorPoint = Vector2.new(0, 0.5);
 	NameHub.Size = UDim2.new(0, 1, 0, 25);
 	NameHub.Font = Enum.Font.GothamBold;
