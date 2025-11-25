@@ -163,108 +163,16 @@ function Update:Notification(title, desc, duration)
 	Update:Notify(desc or title);
 end;
 function Update:StartLoad()
-	local Loader = Instance.new("ScreenGui");
-	Loader.Parent = game.CoreGui;
-	Loader.ZIndexBehavior = Enum.ZIndexBehavior.Global;
-	Loader.DisplayOrder = 1000;
-	local LoaderFrame = Instance.new("Frame");
-	LoaderFrame.Name = "LoaderFrame";
-	LoaderFrame.Parent = Loader;
-	LoaderFrame.ClipsDescendants = true;
-	LoaderFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 5);
-	LoaderFrame.BackgroundTransparency = 0;
-	LoaderFrame.AnchorPoint = Vector2.new(0.5, 0.5);
-	LoaderFrame.Position = UDim2.new(0.5, 0, 0.5, 0);
-	LoaderFrame.Size = UDim2.new(1.5, 0, 1.5, 0);
-	LoaderFrame.BorderSizePixel = 0;
-	local MainLoaderFrame = Instance.new("Frame");
-	MainLoaderFrame.Name = "MainLoaderFrame";
-	MainLoaderFrame.Parent = LoaderFrame;
-	MainLoaderFrame.ClipsDescendants = true;
-	MainLoaderFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 5);
-	MainLoaderFrame.BackgroundTransparency = 0;
-	MainLoaderFrame.AnchorPoint = Vector2.new(0.5, 0.5);
-	MainLoaderFrame.Position = UDim2.new(0.5, 0, 0.5, 0);
-	MainLoaderFrame.Size = UDim2.new(0.5, 0, 0.5, 0);
-	MainLoaderFrame.BorderSizePixel = 0;
-	local TitleLoader = Instance.new("TextLabel");
-	TitleLoader.Parent = MainLoaderFrame;
-	TitleLoader.Text = "DZ HUB";
-	TitleLoader.Font = Enum.Font.FredokaOne;
-	TitleLoader.TextSize = 50;
-	TitleLoader.TextColor3 = Color3.fromRGB(255, 255, 255);
-	TitleLoader.BackgroundTransparency = 1;
-	TitleLoader.AnchorPoint = Vector2.new(0.5, 0.5);
-	TitleLoader.Position = UDim2.new(0.5, 0, 0.3, 0);
-	TitleLoader.Size = UDim2.new(0.8, 0, 0.2, 0);
-	TitleLoader.TextTransparency = 0;
-	local DescriptionLoader = Instance.new("TextLabel");
-	DescriptionLoader.Parent = MainLoaderFrame;
-	DescriptionLoader.Text = "Loading..";
-	DescriptionLoader.Font = Enum.Font.Gotham;
-	DescriptionLoader.TextSize = 15;
-	DescriptionLoader.TextColor3 = Color3.fromRGB(255, 255, 255);
-	DescriptionLoader.BackgroundTransparency = 1;
-	DescriptionLoader.AnchorPoint = Vector2.new(0.5, 0.5);
-	DescriptionLoader.Position = UDim2.new(0.5, 0, 0.6, 0);
-	DescriptionLoader.Size = UDim2.new(0.8, 0, 0.2, 0);
-	DescriptionLoader.TextTransparency = 0;
-	local LoadingBarBackground = Instance.new("Frame");
-	LoadingBarBackground.Parent = MainLoaderFrame;
-	LoadingBarBackground.BackgroundColor3 = Color3.fromRGB(50, 50, 50);
-	LoadingBarBackground.AnchorPoint = Vector2.new(0.5, 0.5);
-	LoadingBarBackground.Position = UDim2.new(0.5, 0, 0.7, 0);
-	LoadingBarBackground.Size = UDim2.new(0.7, 0, 0.05, 0);
-	LoadingBarBackground.ClipsDescendants = true;
-	LoadingBarBackground.BorderSizePixel = 0;
-	LoadingBarBackground.ZIndex = 2;
-	local LoadingBar = Instance.new("Frame");
-	LoadingBar.Parent = LoadingBarBackground;
-	LoadingBar.BackgroundColor3 = Color3.fromRGB(138, 43, 226);
-	LoadingBar.Size = UDim2.new(0, 0, 1, 0);
-	LoadingBar.ZIndex = 3;
-	CreateRounded(LoadingBarBackground, 20);
-	CreateRounded(LoadingBar, 20);
-	local tweenService = game:GetService("TweenService");
-	local dotCount = 0;
-	local running = true;
-	local barTweenInfoPart1 = TweenInfo.new(0.5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out);
-	local barTweenPart1 = tweenService:Create(LoadingBar, barTweenInfoPart1, {
-		Size = UDim2.new(0.25, 0, 1, 0)
-	});
-	local barTweenInfoPart2 = TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out);
-	local barTweenPart2 = tweenService:Create(LoadingBar, barTweenInfoPart2, {
-		Size = UDim2.new(1, 0, 1, 0)
-	});
-	barTweenPart1:Play();
-	function Update:Loaded()
-		barTweenPart2:Play();
-	end;
-	function Update:FinishLoad()
-		barTweenPart2:Play();
-	end;
-	barTweenPart1.Completed:Connect(function()
-		running = true;
-		barTweenPart2.Completed:Connect(function()
-			wait(1);
-			running = false;
-			DescriptionLoader.Text = "Loaded!";
-			wait(0.5);
-			Loader:Destroy();
-		end);
-	end);
-	spawn(function()
-		while running do
-			dotCount = (dotCount + 1) % 4;
-			local dots = string.rep(".", dotCount);
-			DescriptionLoader.Text = "Please wait" .. dots;
-			wait(0.5);
-		end;
-	end);
+	-- Tela de loading removida - função vazia para compatibilidade
+end;
+function Update:FinishLoad()
+	-- Tela de loading removida - função vazia para compatibilidade
+end;
+function Update:Loaded()
+	-- Tela de loading removida - função vazia para compatibilidade
 end;
 local SettingsLib = {
-	SaveSettings = true,
-	LoadAnimation = true
+	SaveSettings = true
 };
 (getgenv()).LoadConfig = function()
 	if readfile and writefile and isfile and isfolder then
@@ -311,9 +219,7 @@ function Update:SaveSettings()
 	return false;
 end;
 function Update:LoadAnimation()
-	if SettingsLib.LoadAnimation then
-		return true;
-	end;
+	-- Função removida - sempre retorna false
 	return false;
 end;
 function Update:Window(Config)
@@ -419,7 +325,10 @@ function Update:Window(Config)
 	CloseButton.ImageColor3 = Color3.fromRGB(245, 245, 245);
 	CreateRounded(CloseButton, 3);
 	CloseButton.MouseButton1Click:connect(function()
-		(game.CoreGui:FindFirstChild("DzHub")).Enabled = not (game.CoreGui:FindFirstChild("DzHub")).Enabled;
+		local dzHub = game.CoreGui:FindFirstChild("DzHub");
+		if dzHub then
+			dzHub:Destroy();
+		end;
 	end);
 	local ResizeButton = Instance.new("ImageButton");
 	ResizeButton.Name = "ResizeButton";
@@ -609,10 +518,6 @@ function Update:Window(Config)
 	end;
 	CreateCheckbox("Save Settings", SettingsLib.SaveSettings, function(state)
 		SettingsLib.SaveSettings = state;
-		(getgenv()).SaveConfig();
-	end);
-	CreateCheckbox("Loading Animation", SettingsLib.LoadAnimation, function(state)
-		SettingsLib.LoadAnimation = state;
 		(getgenv()).SaveConfig();
 	end);
 	CreateButton("Reset Config", function()
