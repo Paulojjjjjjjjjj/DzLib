@@ -1658,7 +1658,7 @@ function Update:Window(Config)
 			end;
 			
 			local lineCount = countLines(text);
-			local textSize = 12; -- Tamanho menor do texto
+			local textSize = 15; -- Tamanho menor do texto
 			local lineHeight = textSize + 4; -- Altura por linha (texto + espaçamento)
 			local minHeight = 20; -- Altura mínima
 			local calculatedHeight = math.max(minHeight, lineCount * lineHeight);
