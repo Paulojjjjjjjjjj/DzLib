@@ -1014,6 +1014,11 @@ function Update:Window(Config)
 			end;
 		end;
 		function main:Dropdown(text, option, var, callback)
+			-- Validação de parâmetros
+			text = text or "";
+			option = option or {};
+			var = var or nil;
+			callback = callback or function() end;
 			local isdropping = false;
 			local Dropdown = Instance.new("Frame");
 			local DropdownFrameScroll = Instance.new("Frame");
@@ -1044,7 +1049,7 @@ function Update:Window(Config)
 			DropTitle.BackgroundTransparency = 1;
 			DropTitle.Size = UDim2.new(1, 0, 0, 30);
 			DropTitle.Font = Enum.Font.Cartoon;
-			DropTitle.Text = text;
+			DropTitle.Text = tostring(text);
 			DropTitle.TextColor3 = Color3.fromRGB(255, 255, 255);
 			DropTitle.TextSize = 15;
 			DropTitle.TextXAlignment = Enum.TextXAlignment.Left;
@@ -1147,7 +1152,7 @@ function Update:Window(Config)
 				if var then
 					-- Não chamar callback durante inicialização - apenas definir visualmente
 					-- pcall(callback, var);
-					SelectItems.Text = "   " .. var;
+					SelectItems.Text = "   " .. tostring(var);
 					activeItem = tostring(var);
 					for i, v in next, DropScroll:GetChildren() do
 						if v:IsA("TextButton") then
