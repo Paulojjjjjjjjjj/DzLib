@@ -1128,6 +1128,11 @@ function Update:Window(Config)
 			UIPadding.Parent = DropScroll;
 			UIPadding.PaddingLeft = UDim.new(0, 5);
 			
+			-- Atualizar CanvasSize automaticamente quando itens são adicionados
+			UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+				DropScroll.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y);
+			end);
+			
 			-- Função para atualizar o texto do SelectItems
 			local function updateSelectItemsText()
 				if not SelectItems or not SelectItems.Parent then
