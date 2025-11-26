@@ -1032,6 +1032,9 @@ function Update:Window(Config)
 			
 			-- Função para atualizar o texto do SelectItems
 			local function updateSelectItemsText()
+				if not SelectItems or not SelectItems.Parent then
+					return; -- SelectItems ainda não foi criado ou foi destruído
+				end;
 				if isMulti then
 					local count = 0;
 					for _ in pairs(selectedItems) do
@@ -1058,6 +1061,9 @@ function Update:Window(Config)
 			
 			-- Função para atualizar o visual dos itens
 			local function updateItemsVisual()
+				if not DropScroll or not DropScroll.Parent then
+					return; -- DropScroll ainda não foi criado ou foi destruído
+				end;
 				for i, v in next, DropScroll:GetChildren() do
 					if v:IsA("TextButton") then
 						local SelectedItemsFrame = v:FindFirstChild("SelectedItems");
@@ -1383,10 +1389,14 @@ function Update:Window(Config)
 				end;
 				updateSelectItemsText();
 				isdropping = false;
-				DropdownFrameScroll.Visible = false;
-				for i, v in next, DropScroll:GetChildren() do
-					if v:IsA("TextButton") then
-						v:Destroy();
+				if DropdownFrameScroll then
+					DropdownFrameScroll.Visible = false;
+				end;
+				if DropScroll and DropScroll.Parent then
+					for i, v in next, DropScroll:GetChildren() do
+						if v:IsA("TextButton") then
+							v:Destroy();
+						end;
 					end;
 				end;
 			end;
