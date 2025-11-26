@@ -1004,6 +1004,25 @@ function Update:Window(Config)
 				})):Play();
 				pcall(callback, toggled);
 			end;
+			local togglefunc = {};
+			function togglefunc:Set(newValue)
+				toggled = newValue;
+				if toggled then
+					Circle:TweenPosition(UDim2.new(0, 17, 0.5, 0), "Out", "Sine", 0.2, true);
+					(TweenService:Create(ToggleImage, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+						BackgroundColor3 = _G.Third,
+						BackgroundTransparency = 0
+					})):Play();
+				else
+					Circle:TweenPosition(UDim2.new(0, 4, 0.5, 0), "Out", "Sine", 0.2, true);
+					(TweenService:Create(ToggleImage, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+						BackgroundColor3 = Color3.fromRGB(200, 200, 200),
+						BackgroundTransparency = 0.8
+					})):Play();
+				end;
+				pcall(callback, toggled);
+			end;
+			return togglefunc;
 		end;
 		function main:Dropdown(text, option, var, callback)
 			local isdropping = false;
@@ -1287,6 +1306,32 @@ function Update:Window(Config)
 				-- Alias para Refresh (compatibilidade Fluent)
 				dropfunc:Refresh(newOptions);
 			end;
+			function dropfunc:Set(newValue)
+				-- Define o valor do dropdown
+				if newValue then
+					SelectItems.Text = "   " .. tostring(newValue);
+					activeItem = tostring(newValue);
+					for i, v in next, DropScroll:GetChildren() do
+						if v:IsA("TextButton") then
+							local SelectedItems = v:FindFirstChild("SelectedItems");
+							if activeItem == v.Text then
+								v.BackgroundTransparency = 0.8;
+								v.TextTransparency = 0;
+								if SelectedItems then
+									SelectedItems.BackgroundTransparency = 0;
+								end;
+							else
+								v.BackgroundTransparency = 1;
+								v.TextTransparency = 0.5;
+								if SelectedItems then
+									SelectedItems.BackgroundTransparency = 1;
+								end;
+							end;
+						end;
+					end;
+					pcall(callback, newValue);
+				end;
+			end;
 			return dropfunc;
 		end;
 		function main:Slider(text, min, max, set, callback)
@@ -1475,6 +1520,14 @@ function Update:Window(Config)
 			end);
 			UICorner.CornerRadius = UDim.new(0, 5);
 			UICorner.Parent = RealTextbox;
+			local textboxfunc = {};
+			function textboxfunc:Set(newValue)
+				if type(newValue) == "string" then
+					RealTextbox.Text = newValue;
+					pcall(callback, newValue);
+				end;
+			end;
+			return textboxfunc;
 		end;
 		function main:Label(text)
 			local Frame = Instance.new("Frame");
