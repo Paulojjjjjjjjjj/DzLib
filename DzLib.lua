@@ -1030,78 +1030,6 @@ function Update:Window(Config)
 			local selectedItems = {}; -- Tabela para armazenar itens selecionados (usado apenas em modo Multi)
 			local activeItem = nil; -- Item ativo (usado apenas em modo single)
 			
-			-- Função para atualizar o texto do SelectItems
-			local function updateSelectItemsText()
-				if not SelectItems or not SelectItems.Parent then
-					return; -- SelectItems ainda não foi criado ou foi destruído
-				end;
-				if isMulti then
-					local count = 0;
-					for _ in pairs(selectedItems) do
-						count = count + 1;
-					end;
-					if count == 0 then
-						SelectItems.Text = "   Select Items";
-					elseif count == 1 then
-						for item in pairs(selectedItems) do
-							SelectItems.Text = "   " .. item;
-							break;
-						end;
-					else
-						SelectItems.Text = "   " .. tostring(count) .. " Selected";
-					end;
-				else
-					if activeItem then
-						SelectItems.Text = "   " .. activeItem;
-					else
-						SelectItems.Text = "   Select Items";
-					end;
-				end;
-			end;
-			
-			-- Função para atualizar o visual dos itens
-			local function updateItemsVisual()
-				if not DropScroll or not DropScroll.Parent then
-					return; -- DropScroll ainda não foi criado ou foi destruído
-				end;
-				for i, v in next, DropScroll:GetChildren() do
-					if v:IsA("TextButton") then
-						local SelectedItemsFrame = v:FindFirstChild("SelectedItems");
-						if isMulti then
-							-- Modo Multi: mostra selecionado se estiver na tabela selectedItems
-							if selectedItems[v.Text] then
-								v.BackgroundTransparency = 0.8;
-								v.TextTransparency = 0;
-								if SelectedItemsFrame then
-									SelectedItemsFrame.BackgroundTransparency = 0;
-								end;
-							else
-								v.BackgroundTransparency = 1;
-								v.TextTransparency = 0.5;
-								if SelectedItemsFrame then
-									SelectedItemsFrame.BackgroundTransparency = 1;
-								end;
-							end;
-						else
-							-- Modo Single: mostra selecionado apenas o activeItem
-							if activeItem == v.Text then
-								v.BackgroundTransparency = 0.8;
-								v.TextTransparency = 0;
-								if SelectedItemsFrame then
-									SelectedItemsFrame.BackgroundTransparency = 0;
-								end;
-							else
-								v.BackgroundTransparency = 1;
-								v.TextTransparency = 0.5;
-								if SelectedItemsFrame then
-									SelectedItemsFrame.BackgroundTransparency = 1;
-								end;
-							end;
-						end;
-					end;
-				end;
-			end;
-			
 			local Dropdown = Instance.new("Frame");
 			local DropdownFrameScroll = Instance.new("Frame");
 			local UICorner = Instance.new("UICorner");
@@ -1199,6 +1127,79 @@ function Update:Window(Config)
 			UIListLayout.Padding = UDim.new(0, 1);
 			UIPadding.Parent = DropScroll;
 			UIPadding.PaddingLeft = UDim.new(0, 5);
+			
+			-- Função para atualizar o texto do SelectItems
+			local function updateSelectItemsText()
+				if not SelectItems or not SelectItems.Parent then
+					return; -- SelectItems ainda não foi criado ou foi destruído
+				end;
+				if isMulti then
+					local count = 0;
+					for _ in pairs(selectedItems) do
+						count = count + 1;
+					end;
+					if count == 0 then
+						SelectItems.Text = "   Select Items";
+					elseif count == 1 then
+						for item in pairs(selectedItems) do
+							SelectItems.Text = "   " .. item;
+							break;
+						end;
+					else
+						SelectItems.Text = "   " .. tostring(count) .. " Selected";
+					end;
+				else
+					if activeItem then
+						SelectItems.Text = "   " .. activeItem;
+					else
+						SelectItems.Text = "   Select Items";
+					end;
+				end;
+			end;
+			
+			-- Função para atualizar o visual dos itens
+			local function updateItemsVisual()
+				if not DropScroll or not DropScroll.Parent then
+					return; -- DropScroll ainda não foi criado ou foi destruído
+				end;
+				for i, v in next, DropScroll:GetChildren() do
+					if v:IsA("TextButton") then
+						local SelectedItemsFrame = v:FindFirstChild("SelectedItems");
+						if isMulti then
+							-- Modo Multi: mostra selecionado se estiver na tabela selectedItems
+							if selectedItems[v.Text] then
+								v.BackgroundTransparency = 0.8;
+								v.TextTransparency = 0;
+								if SelectedItemsFrame then
+									SelectedItemsFrame.BackgroundTransparency = 0;
+								end;
+							else
+								v.BackgroundTransparency = 1;
+								v.TextTransparency = 0.5;
+								if SelectedItemsFrame then
+									SelectedItemsFrame.BackgroundTransparency = 1;
+								end;
+							end;
+						else
+							-- Modo Single: mostra selecionado apenas o activeItem
+							if activeItem == v.Text then
+								v.BackgroundTransparency = 0.8;
+								v.TextTransparency = 0;
+								if SelectedItemsFrame then
+									SelectedItemsFrame.BackgroundTransparency = 0;
+								end;
+							else
+								v.BackgroundTransparency = 1;
+								v.TextTransparency = 0.5;
+								if SelectedItemsFrame then
+									SelectedItemsFrame.BackgroundTransparency = 1;
+								end;
+							end;
+						end;
+					end;
+				end;
+			end;
+			
 			for i, v in next, option do
 				local Item = Instance.new("TextButton");
 				local CRNRitems = Instance.new("UICorner");
