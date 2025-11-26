@@ -178,6 +178,14 @@ end;
 local SettingsLib = {
 	SaveSettings = true
 };
+-- Variáveis globais para gerenciamento de configurações
+local ConfigFolder = "DzHub";
+local ConfigData = {};
+local IgnoreIndexes = {};
+local CurrentLibrary = nil;
+local ConfigTab = nil;
+local InterfaceTab = nil;
+local IgnoreTheme = false;
 (getgenv()).LoadConfig = function()
 	if readfile and writefile and isfile and isfolder then
 		if not isfolder("DzHub") then
@@ -202,7 +210,7 @@ end;
 (getgenv()).SaveConfig = function()
 	if readfile and writefile and isfile and isfolder then
 		if not isfile(("DzHub/Library/" .. game.Players.LocalPlayer.Name .. ".json")) then
-			(getgenv()).Load();
+			(getgenv()).LoadConfig();
 		else
 			local Decode = (game:GetService("HttpService")):JSONDecode(readfile("DzHub/Library/" .. game.Players.LocalPlayer.Name .. ".json"));
 			local Array = {};
@@ -1748,6 +1756,203 @@ function Update:Hide()
 	local dzHub = game.CoreGui:FindFirstChild("DzHub");
 	if dzHub then
 		dzHub.Enabled = false;
+	end;
+end;
+function Update:ListFile(folder, ext)
+	-- Lista arquivos de uma pasta com uma extensão específica
+	-- Garante que folder é uma string
+	if type(folder) ~= "string" then
+		return {};
+	end;
+	if not isfolder(folder) then 
+		return {}; 
+	end;
+	local files = {};
+	local fileList = listfiles(folder);
+	if type(fileList) == "table" then
+		for _, file in pairs(fileList) do
+			if type(file) == "string" and file:match("%." .. ext .. "$") then
+				local fileName = file:match("([^/\\]+)$");
+				if fileName then
+					table.insert(files, fileName);
+				end;
+			end;
+		end;
+	end;
+	return files;
+end;
+function Update:Space()
+	-- Retorna um espaço em branco
+	return " ";
+end;
+function Update:CheckFolder(self, folder)
+	-- Verifica e cria uma pasta se não existir
+	if type(folder) ~= "string" then
+		return;
+	end;
+	if not isfolder(folder) then
+		makefolder(folder);
+	end;
+end;
+function Update:CheckFile(self, file, defaultContent)
+	-- Verifica e cria um arquivo com conteúdo padrão se não existir
+	if type(file) ~= "string" then
+		return;
+	end;
+	if not isfile(file) then
+		local content = defaultContent or {};
+		if type(content) == "table" then
+			writefile(file, (game:GetService("HttpService")):JSONEncode(content));
+		else
+			writefile(file, tostring(content));
+		end;
+	end;
+end;
+function Update:DeleteFile(self, file)
+	-- Deleta um arquivo se existir
+	if type(file) == "string" and isfile(file) then
+		delfile(file);
+	end;
+end;
+-- Funções nativas de SaveManager (vu2)
+function Update:SetLibrary(lib)
+	-- Define a biblioteca para salvar configurações
+	CurrentLibrary = lib;
+end;
+function Update:SetFolder(folder)
+	-- Define a pasta para salvar configurações
+	if type(folder) == "string" then
+		ConfigFolder = folder;
+		-- Cria a pasta se não existir
+		if isfolder then
+			local folders = {};
+			for folderName in folder:gmatch("([^/]+)") do
+				table.insert(folders, folderName);
+			end;
+			local currentPath = "";
+			for _, folderName in ipairs(folders) do
+				currentPath = currentPath .. (currentPath == "" and "" or "/") .. folderName;
+				if not isfolder(currentPath) then
+					makefolder(currentPath);
+				end;
+			end;
+		end;
+	end;
+end;
+function Update:SetIgnoreIndexes(indexes)
+	-- Define índices a ignorar ao salvar
+	if type(indexes) == "table" then
+		IgnoreIndexes = indexes;
+	end;
+end;
+function Update:IgnoreThemeSettings(ignore)
+	-- Ignora configurações de tema ao salvar
+	IgnoreTheme = ignore == true;
+end;
+function Update:BuildConfigSection(tab)
+	-- Constrói uma seção de configurações na UI
+	ConfigTab = tab;
+	if tab and tab.Button then
+		-- Adiciona botões de salvar/carregar/resetar
+		tab:Button("Save Config", function()
+			Update:Save();
+			Update:Notify("Config saved!");
+		end);
+		tab:Button("Load Config", function()
+			Update:LoadAutoloadConfig();
+			Update:Notify("Config loaded!");
+		end);
+		tab:Button("Reset Config", function()
+			if isfolder(ConfigFolder) then
+				delfolder(ConfigFolder);
+				Update:Notify("Config reset!");
+			end;
+		end);
+	end;
+end;
+function Update:Save()
+	-- Salva configurações na pasta definida
+	if not CurrentLibrary or not CurrentLibrary.Options then
+		if (getgenv()).SaveConfig then
+			(getgenv()).SaveConfig();
+		end;
+		return;
+	end;
+	if not isfolder or not writefile or not isfile then
+		return;
+	end;
+	-- Garante que a pasta existe
+	if not isfolder(ConfigFolder) then
+		makefolder(ConfigFolder);
+	end;
+	-- Coleta todas as opções da biblioteca
+	local configToSave = {};
+	for optionName, option in pairs(CurrentLibrary.Options) do
+		-- Verifica se deve ignorar este índice
+		local shouldIgnore = false;
+		for _, ignoreName in ipairs(IgnoreIndexes) do
+			if optionName == ignoreName then
+				shouldIgnore = true;
+				break;
+			end;
+		end;
+		if not shouldIgnore then
+			if option.Value ~= nil then
+				configToSave[optionName] = option.Value;
+			elseif option.Values then
+				configToSave[optionName] = option.Values;
+			end;
+		end;
+	end;
+	-- Salva o arquivo
+	local configFile = ConfigFolder .. "/config.json";
+	writefile(configFile, (game:GetService("HttpService")):JSONEncode(configToSave));
+end;
+function Update:LoadAutoloadConfig()
+	-- Carrega configurações automaticamente da pasta definida
+	if not CurrentLibrary or not CurrentLibrary.Options then
+		if (getgenv()).LoadConfig then
+			(getgenv()).LoadConfig();
+		end;
+		return;
+	end;
+	if not isfolder or not readfile or not isfile then
+		return;
+	end;
+	local configFile = ConfigFolder .. "/config.json";
+	if isfile(configFile) then
+		local success, decoded = pcall(function()
+			return (game:GetService("HttpService")):JSONDecode(readfile(configFile));
+		end);
+		if success and decoded then
+			for optionName, value in pairs(decoded) do
+				if CurrentLibrary.Options[optionName] then
+					local option = CurrentLibrary.Options[optionName];
+					if option.SetValue then
+						option:SetValue(value);
+					elseif option.Set then
+						option:Set(value);
+					else
+						option.Value = value;
+					end;
+				end;
+			end;
+		end;
+	end;
+end;
+-- Funções nativas de InterfaceManager (v3)
+function Update:BuildInterfaceSection(tab)
+	-- Constrói uma seção de interface na UI
+	InterfaceTab = tab;
+	if tab and tab.Button then
+		-- Adiciona botões de interface
+		tab:Button("Reset UI", function()
+			local dzHub = game.CoreGui:FindFirstChild("DzHub");
+			if dzHub then
+				dzHub:Destroy();
+			end;
+			Update:Notify("UI reset!");
+		end);
 	end;
 end;
 return Update;
