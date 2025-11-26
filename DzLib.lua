@@ -1023,8 +1023,79 @@ function Update:Window(Config)
 			end;
 			return togglefunc;
 		end;
-		function main:Dropdown(text, option, var, callback)
+		function main:Dropdown(text, option, var, callback, Multi)
+			-- Multi é um parâmetro opcional que permite múltipla seleção
+			local isMulti = Multi == true;
 			local isdropping = false;
+			local selectedItems = {}; -- Tabela para armazenar itens selecionados (usado apenas em modo Multi)
+			local activeItem = nil; -- Item ativo (usado apenas em modo single)
+			
+			-- Função para atualizar o texto do SelectItems
+			local function updateSelectItemsText()
+				if isMulti then
+					local count = 0;
+					for _ in pairs(selectedItems) do
+						count = count + 1;
+					end;
+					if count == 0 then
+						SelectItems.Text = "   Select Items";
+					elseif count == 1 then
+						for item in pairs(selectedItems) do
+							SelectItems.Text = "   " .. item;
+							break;
+						end;
+					else
+						SelectItems.Text = "   " .. tostring(count) .. " Selected";
+					end;
+				else
+					if activeItem then
+						SelectItems.Text = "   " .. activeItem;
+					else
+						SelectItems.Text = "   Select Items";
+					end;
+				end;
+			end;
+			
+			-- Função para atualizar o visual dos itens
+			local function updateItemsVisual()
+				for i, v in next, DropScroll:GetChildren() do
+					if v:IsA("TextButton") then
+						local SelectedItemsFrame = v:FindFirstChild("SelectedItems");
+						if isMulti then
+							-- Modo Multi: mostra selecionado se estiver na tabela selectedItems
+							if selectedItems[v.Text] then
+								v.BackgroundTransparency = 0.8;
+								v.TextTransparency = 0;
+								if SelectedItemsFrame then
+									SelectedItemsFrame.BackgroundTransparency = 0;
+								end;
+							else
+								v.BackgroundTransparency = 1;
+								v.TextTransparency = 0.5;
+								if SelectedItemsFrame then
+									SelectedItemsFrame.BackgroundTransparency = 1;
+								end;
+							end;
+						else
+							-- Modo Single: mostra selecionado apenas o activeItem
+							if activeItem == v.Text then
+								v.BackgroundTransparency = 0.8;
+								v.TextTransparency = 0;
+								if SelectedItemsFrame then
+									SelectedItemsFrame.BackgroundTransparency = 0;
+								end;
+							else
+								v.BackgroundTransparency = 1;
+								v.TextTransparency = 0.5;
+								if SelectedItemsFrame then
+									SelectedItemsFrame.BackgroundTransparency = 1;
+								end;
+							end;
+						end;
+					end;
+				end;
+			end;
+			
 			local Dropdown = Instance.new("Frame");
 			local DropdownFrameScroll = Instance.new("Frame");
 			local UICorner = Instance.new("UICorner");
@@ -1154,49 +1225,65 @@ function Update:Window(Config)
 				SelectedItems.ZIndex = 4;
 				CRNRitems.Parent = SelectedItems;
 				CRNRitems.CornerRadius = UDim.new(0, 999);
+				
+				-- Inicialização com valor padrão
 				if var then
-					-- Não chamar callback durante inicialização - apenas definir visualmente
-					-- pcall(callback, var);
-					SelectItems.Text = "   " .. var;
-					activeItem = tostring(var);
-					for i, v in next, DropScroll:GetChildren() do
-						if v:IsA("TextButton") then
-							local SelectedItems = v:FindFirstChild("SelectedItems");
-							if activeItem == v.Text then
-								v.BackgroundTransparency = 0.8;
-								v.TextTransparency = 0;
-								if SelectedItems then
-									SelectedItems.BackgroundTransparency = 0;
-								end;
+					if isMulti then
+						-- Se var é uma tabela, adiciona todos os itens
+						if type(var) == "table" then
+							for _, val in ipairs(var) do
+								selectedItems[tostring(val)] = true;
 							end;
+						else
+							-- Se var é um valor único, adiciona apenas ele
+							selectedItems[tostring(var)] = true;
 						end;
+					else
+						-- Modo single: define o activeItem
+						activeItem = tostring(var);
 					end;
 				end;
+				
 				Item.MouseButton1Click:Connect(function()
 					SelectItems.ClipsDescendants = true;
-					callback(Item.Text);
-					activeItem = Item.Text;
-					for i, v in next, DropScroll:GetChildren() do
-						if v:IsA("TextButton") then
-							local SelectedItems = v:FindFirstChild("SelectedItems");
-							if activeItem == v.Text then
-								v.BackgroundTransparency = 0.8;
-								v.TextTransparency = 0;
-								if SelectedItems then
-									SelectedItems.BackgroundTransparency = 0;
-								end;
-							else
-								v.BackgroundTransparency = 1;
-								v.TextTransparency = 0.5;
-								if SelectedItems then
-									SelectedItems.BackgroundTransparency = 1;
-								end;
-							end;
+					
+					if isMulti then
+						-- Modo Multi: toggle do item
+						if selectedItems[Item.Text] then
+							-- Remove da seleção
+							selectedItems[Item.Text] = nil;
+						else
+							-- Adiciona à seleção
+							selectedItems[Item.Text] = true;
 						end;
+						
+						-- Atualiza visual
+						updateItemsVisual();
+						updateSelectItemsText();
+						
+						-- Chama callback com tabela de valores selecionados
+						local selectedArray = {};
+						for item in pairs(selectedItems) do
+							table.insert(selectedArray, item);
+						end;
+						pcall(callback, selectedArray);
+					else
+						-- Modo Single: define como único item ativo
+						activeItem = Item.Text;
+						
+						-- Atualiza visual
+						updateItemsVisual();
+						updateSelectItemsText();
+						
+						-- Chama callback com valor único
+						pcall(callback, Item.Text);
 					end;
-					SelectItems.Text = "   " .. Item.Text;
 				end);
 			end;
+			
+			-- Atualiza visual inicial
+			updateItemsVisual();
+			updateSelectItemsText();
 			DropScroll.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y);
 			SelectItems.MouseButton1Click:Connect(function()
 				if isdropping == false then
@@ -1247,43 +1334,54 @@ function Update:Window(Config)
 				ItemPadding.PaddingLeft = UDim.new(0, 8);
 				UICorner_5.Parent = Item;
 				UICorner_5.CornerRadius = UDim.new(0, 5);
-				local SelectedItems = Instance.new("Frame");
-				SelectedItems.Name = "SelectedItems";
-				SelectedItems.Parent = Item;
-				SelectedItems.BackgroundColor3 = _G.Third;
-				SelectedItems.BackgroundTransparency = 1;
-				SelectedItems.Size = UDim2.new(0, 3, 0.4, 0);
-				SelectedItems.Position = UDim2.new(0, -8, 0.5, 0);
-				SelectedItems.AnchorPoint = Vector2.new(0, 0.5);
-				SelectedItems.ZIndex = 4;
-				CRNRitems.Parent = SelectedItems;
+				local SelectedItemsFrame = Instance.new("Frame");
+				SelectedItemsFrame.Name = "SelectedItems";
+				SelectedItemsFrame.Parent = Item;
+				SelectedItemsFrame.BackgroundColor3 = _G.Third;
+				SelectedItemsFrame.BackgroundTransparency = 1;
+				SelectedItemsFrame.Size = UDim2.new(0, 3, 0.4, 0);
+				SelectedItemsFrame.Position = UDim2.new(0, -8, 0.5, 0);
+				SelectedItemsFrame.AnchorPoint = Vector2.new(0, 0.5);
+				SelectedItemsFrame.ZIndex = 4;
+				CRNRitems.Parent = SelectedItemsFrame;
 				CRNRitems.CornerRadius = UDim.new(0, 999);
 				Item.MouseButton1Click:Connect(function()
-					callback(Item.Text);
-					activeItem = Item.Text;
-					for i, v in next, DropScroll:GetChildren() do
-						if v:IsA("TextButton") then
-							local SelectedItems = v:FindFirstChild("SelectedItems");
-							if activeItem == v.Text then
-								v.BackgroundTransparency = 0.8;
-								v.TextTransparency = 0;
-								if SelectedItems then
-									SelectedItems.BackgroundTransparency = 0;
-								end;
-							else
-								v.BackgroundTransparency = 1;
-								v.TextTransparency = 0.5;
-								if SelectedItems then
-									SelectedItems.BackgroundTransparency = 1;
-								end;
-							end;
+					SelectItems.ClipsDescendants = true;
+					
+					if isMulti then
+						-- Modo Multi: toggle do item
+						if selectedItems[Item.Text] then
+							selectedItems[Item.Text] = nil;
+						else
+							selectedItems[Item.Text] = true;
 						end;
+						
+						updateItemsVisual();
+						updateSelectItemsText();
+						
+						local selectedArray = {};
+						for item in pairs(selectedItems) do
+							table.insert(selectedArray, item);
+						end;
+						pcall(callback, selectedArray);
+					else
+						activeItem = Item.Text;
+						updateItemsVisual();
+						updateSelectItemsText();
+						pcall(callback, Item.Text);
 					end;
-					SelectItems.Text = "   " .. Item.Text;
 				end);
+				
+				-- Atualiza visual após adicionar
+				updateItemsVisual();
 			end;
 			function dropfunc:Clear()
-				SelectItems.Text = "   Select Items";
+				if isMulti then
+					selectedItems = {};
+				else
+					activeItem = nil;
+				end;
+				updateSelectItemsText();
 				isdropping = false;
 				DropdownFrameScroll.Visible = false;
 				for i, v in next, DropScroll:GetChildren() do
@@ -1307,28 +1405,32 @@ function Update:Window(Config)
 			end;
 			function dropfunc:Set(newValue)
 				-- Define o valor do dropdown
-				if newValue then
-					SelectItems.Text = "   " .. tostring(newValue);
-					activeItem = tostring(newValue);
-					for i, v in next, DropScroll:GetChildren() do
-						if v:IsA("TextButton") then
-							local SelectedItems = v:FindFirstChild("SelectedItems");
-							if activeItem == v.Text then
-								v.BackgroundTransparency = 0.8;
-								v.TextTransparency = 0;
-								if SelectedItems then
-									SelectedItems.BackgroundTransparency = 0;
-								end;
-							else
-								v.BackgroundTransparency = 1;
-								v.TextTransparency = 0.5;
-								if SelectedItems then
-									SelectedItems.BackgroundTransparency = 1;
-								end;
-							end;
+				if isMulti then
+					-- Modo Multi: newValue deve ser uma tabela
+					selectedItems = {};
+					if type(newValue) == "table" then
+						for _, val in ipairs(newValue) do
+							selectedItems[tostring(val)] = true;
 						end;
+					elseif newValue then
+						selectedItems[tostring(newValue)] = true;
 					end;
-					pcall(callback, newValue);
+					updateItemsVisual();
+					updateSelectItemsText();
+					
+					local selectedArray = {};
+					for item in pairs(selectedItems) do
+						table.insert(selectedArray, item);
+					end;
+					pcall(callback, selectedArray);
+				else
+					-- Modo Single: newValue é um valor único
+					if newValue then
+						activeItem = tostring(newValue);
+						updateItemsVisual();
+						updateSelectItemsText();
+						pcall(callback, newValue);
+					end;
 				end;
 			end;
 			return dropfunc;
@@ -1881,14 +1983,31 @@ local SaveManager = {} do
 		},
 		Dropdown = {
 			Save = function(idx, object)
-				return { type = "Dropdown", idx = idx, value = object.Value };
+				-- Suporta tanto valores únicos (string) quanto múltiplos (table)
+				local value = object.Value;
+				if type(value) == "table" then
+					-- Multi dropdown: salva como tabela
+					return { type = "Dropdown", idx = idx, value = value, multi = true };
+				else
+					-- Single dropdown: salva como string
+					return { type = "Dropdown", idx = idx, value = value, multi = false };
+				end;
 			end,
 			Load = function(idx, data)
 				if SaveManager.Options[idx] then
+					local value = data.value;
+					-- Se o dado salvo tinha multi=true mas o valor é string, converte para tabela
+					if data.multi == true and type(value) == "string" then
+						value = {value};
+					end;
+					-- Se o dado salvo tinha multi=false mas o valor é tabela, pega o primeiro item
+					if data.multi == false and type(value) == "table" then
+						value = value[1] or "";
+					end;
 					if SaveManager.Options[idx].SetValue then
-						SaveManager.Options[idx].SetValue(data.value);
+						SaveManager.Options[idx].SetValue(value);
 					elseif SaveManager.Options[idx].Value ~= nil then
-						SaveManager.Options[idx].Value = data.value;
+						SaveManager.Options[idx].Value = value;
 					end;
 				end;
 			end,
