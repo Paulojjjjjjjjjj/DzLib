@@ -2061,10 +2061,11 @@ local SaveManager = {} do
 
 			local success, err = self:Load(name);
 			if not success then
-				return self.Library:Notify("Failed to load autoload config: " .. err);
+				-- Silenciosamente falha ao carregar (sem notificação)
+				return;
 			end;
 
-			self.Library:Notify(string.format("Auto loaded config %q", name));
+			-- Carrega silenciosamente (sem notificação)
 		end;
 	end;
 
