@@ -1015,7 +1015,14 @@ function Update:Window(Config)
 		end;
 		function main:Dropdown(text, option, var, callback)
 			-- Validação de parâmetros
-			text = text or "";
+			-- Garante que text seja sempre uma string
+			if type(text) == "table" then
+				-- Se text for uma tabela, tenta pegar o Title ou converte para string
+				text = text.Title or text[1] or tostring(text);
+			else
+				text = text or "";
+			end;
+			text = tostring(text);
 			option = option or {};
 			var = var or nil;
 			callback = callback or function() end;
