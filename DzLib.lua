@@ -2055,20 +2055,10 @@ local SaveManager = {} do
 
 			local success, err = self:Load(name);
 			if not success then
-				return self.Library:Notify({
-					Title = "Interface",
-					Content = "Config loader",
-					SubContent = "Failed to load autoload config: " .. err,
-					Duration = 7
-				});
+				return self.Library:Notify("Failed to load autoload config: " .. err);
 			end;
 
-			self.Library:Notify({
-				Title = "Interface",
-				Content = "Config loader",
-				SubContent = string.format("Auto loaded config %q", name),
-				Duration = 7
-			});
+			self.Library:Notify(string.format("Auto loaded config %q", name));
 		end;
 	end;
 
