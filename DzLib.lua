@@ -194,7 +194,6 @@ local SettingsLib = {
 				SettingsLib[i] = v;
 			end;
 		end;
-		print("Library Loaded!");
 	else
 		return warn("Status : Undetected Executor");
 	end;
