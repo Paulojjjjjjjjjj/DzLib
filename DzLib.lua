@@ -1845,7 +1845,7 @@ end;
 local httpService = game:GetService("HttpService");
 
 local SaveManager = {} do
-	SaveManager.Folder = "DzHubSettings";
+	SaveManager.Folder = "DzHub/Configs";
 	SaveManager.Ignore = {};
 	SaveManager.Options = {};
 	SaveManager.Library = Update;
@@ -1986,9 +1986,15 @@ local SaveManager = {} do
 	end;
 
 	function SaveManager:BuildFolderTree()
+		-- Cria a estrutura de pastas organizada:
+		-- DzHub/
+		--   Configs/
+		--     settings/
 		local paths = {
-			self.Folder,
-			self.Folder .. "/settings"
+			"DzHub",                    -- Pasta principal
+			"DzHub/Configs",            -- Pasta de configurações
+			self.Folder,                -- DzHub/Configs (mesmo que acima, mas garante)
+			self.Folder .. "/settings"  -- DzHub/Configs/settings (onde ficam os .json)
 		};
 
 		for i = 1, #paths do
