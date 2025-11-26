@@ -1646,36 +1646,60 @@ function Update:Window(Config)
 			local Label = Instance.new("TextLabel");
 			local PaddingLabel = Instance.new("UIPadding");
 			local labelfunc = {};
+			
+			-- Calcula o número de linhas no texto
+			local function countLines(str)
+				if not str then return 1 end;
+				local count = 1;
+				for _ in str:gmatch("\n") do
+					count = count + 1;
+				end;
+				return count;
+			end;
+			
+			local lineCount = countLines(text);
+			local textSize = 12; -- Tamanho menor do texto
+			local lineHeight = textSize + 4; -- Altura por linha (texto + espaçamento)
+			local minHeight = 20; -- Altura mínima
+			local calculatedHeight = math.max(minHeight, lineCount * lineHeight);
+			
 			Frame.Name = "Frame";
 			Frame.Parent = MainFramePage;
 			Frame.BackgroundColor3 = _G.Primary;
 			Frame.BackgroundTransparency = 1;
-			Frame.Size = UDim2.new(1, 0, 0, 30);
+			Frame.Size = UDim2.new(1, 0, 0, calculatedHeight);
 			Label.Name = "Label";
 			Label.Parent = Frame;
 			Label.BackgroundColor3 = Color3.fromRGB(255, 255, 255);
 			Label.BackgroundTransparency = 1;
-			Label.Size = UDim2.new(1, -30, 0, 30);
+			Label.Size = UDim2.new(1, -30, 0, calculatedHeight);
 			Label.Font = Enum.Font.Nunito;
-			Label.Position = UDim2.new(0, 30, 0.5, 0);
-			Label.AnchorPoint = Vector2.new(0, 0.5);
+			Label.Position = UDim2.new(0, 30, 0, 0);
+			Label.AnchorPoint = Vector2.new(0, 0);
 			Label.TextColor3 = Color3.fromRGB(225, 225, 225);
-			Label.TextSize = 15;
+			Label.TextSize = textSize;
 			Label.Text = text;
 			Label.TextXAlignment = Enum.TextXAlignment.Left;
+			Label.TextYAlignment = Enum.TextYAlignment.Top;
+			Label.TextWrapped = true;
 			local ImageLabel = Instance.new("ImageLabel");
 			ImageLabel.Name = "ImageLabel";
 			ImageLabel.Parent = Frame;
 			ImageLabel.BackgroundColor3 = Color3.fromRGB(200, 200, 200);
 			ImageLabel.BackgroundTransparency = 1;
 			ImageLabel.ImageTransparency = 0;
-			ImageLabel.Position = UDim2.new(0, 10, 0.5, 0);
+			ImageLabel.Position = UDim2.new(0, 10, 0, 0);
 			ImageLabel.Size = UDim2.new(0, 14, 0, 14);
-			ImageLabel.AnchorPoint = Vector2.new(0, 0.5);
+			ImageLabel.AnchorPoint = Vector2.new(0, 0);
 			ImageLabel.Image = "rbxassetid://10723415903";
 			ImageLabel.ImageColor3 = Color3.fromRGB(200, 200, 200);
 			function labelfunc:Set(newtext)
 				Label.Text = newtext;
+				-- Recalcula o tamanho quando o texto muda
+				local newLineCount = countLines(newtext);
+				local newHeight = math.max(minHeight, newLineCount * lineHeight);
+				Frame.Size = UDim2.new(1, 0, 0, newHeight);
+				Label.Size = UDim2.new(1, -30, 0, newHeight);
 			end;
 			return labelfunc;
 		end;
