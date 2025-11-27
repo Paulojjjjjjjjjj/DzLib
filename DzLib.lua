@@ -1159,7 +1159,7 @@ function Update:Window(Config)
 						SelectItems.Text = "   " .. tostring(count) .. " Selected";
 					end;
 				else
-					if activeItem then
+					if activeItem and activeItem ~= "" then
 						SelectItems.Text = "   " .. activeItem;
 					else
 						SelectItems.Text = "   Select Items";
