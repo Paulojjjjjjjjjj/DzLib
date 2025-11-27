@@ -1693,7 +1693,7 @@ function Update:Window(Config)
 			Label.TextSize = textSize;
 			Label.Text = text;
 			Label.TextXAlignment = Enum.TextXAlignment.Left;
-			Label.TextYAlignment = Enum.TextYAlignment.Top;
+			Label.TextYAlignment = Enum.TextYAlignment.Center;
 			Label.TextWrapped = true;
 			function labelfunc:Set(newtext)
 				Label.Text = newtext;
