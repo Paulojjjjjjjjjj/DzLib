@@ -1245,7 +1245,7 @@ function Update:Window(Config)
 				CRNRitems.CornerRadius = UDim.new(0, 999);
 				
 				-- Inicialização com valor padrão
-				if var then
+				if var and var ~= "" then
 					if isMulti then
 						-- Se var é uma tabela, adiciona todos os itens
 						if type(var) == "table" then
@@ -1286,15 +1286,19 @@ function Update:Window(Config)
 						end;
 						pcall(callback, selectedArray);
 					else
-						-- Modo Single: define como único item ativo
-						activeItem = Item.Text;
+						-- Modo Normal: toggle do item (se já está selecionado, desmarca)
+						if activeItem == Item.Text then
+							activeItem = nil; -- Desmarcar
+						else
+							activeItem = Item.Text; -- Marcar novo item
+						end;
 						
 						-- Atualiza visual
 						updateItemsVisual();
 						updateSelectItemsText();
 						
-						-- Chama callback com valor único
-						pcall(callback, Item.Text);
+						-- Chama callback com valor único (pode ser nil se desmarcou)
+						pcall(callback, activeItem);
 					end;
 				end);
 			end;
