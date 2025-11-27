@@ -1098,7 +1098,7 @@ function Update:Window(Config)
 			DropdownFrameScroll.BackgroundColor3 = Color3.fromRGB(24, 24, 26);
 			DropdownFrameScroll.BackgroundTransparency = 0;
 			DropdownFrameScroll.ClipsDescendants = true;
-			DropdownFrameScroll.Size = UDim2.new(1, 0, 0, 200);
+			DropdownFrameScroll.Size = UDim2.new(1, 0, 0, 250); -- Aumentar altura
 			DropdownFrameScroll.Position = UDim2.new(0, 5, 0, 40);
 			DropdownFrameScroll.Visible = false;
 			DropdownFrameScroll.AnchorPoint = Vector2.new(0, 0);
@@ -1112,11 +1112,12 @@ function Update:Window(Config)
 			DropScroll.BackgroundTransparency = 1;
 			DropScroll.BorderSizePixel = 0;
 			DropScroll.Position = UDim2.new(0, 0, 0, 10);
-			DropScroll.Size = UDim2.new(1, 0, 0, 180);
+			DropScroll.Size = UDim2.new(1, 0, 1, -15); -- Usar tamanho relativo ao parent
 			DropScroll.AnchorPoint = Vector2.new(0, 0);
-			DropScroll.ClipsDescendants = true;
-			DropScroll.ScrollBarThickness = 3;
+			DropScroll.ClipsDescendants = false; -- Não clipar para permitir scroll completo
+			DropScroll.ScrollBarThickness = 5; -- Aumentar espessura da barra de scroll
 			DropScroll.ZIndex = 3;
+			DropScroll.CanvasSize = UDim2.new(0, 0, 0, 0); -- Inicializar CanvasSize
 			local PaddingDrop = Instance.new("UIPadding");
 			PaddingDrop.PaddingLeft = UDim.new(0, 10);
 			PaddingDrop.PaddingRight = UDim.new(0, 10);
@@ -1130,7 +1131,8 @@ function Update:Window(Config)
 			
 			-- Atualizar CanvasSize automaticamente quando itens são adicionados
 			UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-				DropScroll.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y);
+				local contentHeight = UIListLayout.AbsoluteContentSize.Y;
+				DropScroll.CanvasSize = UDim2.new(0, 0, 0, contentHeight + 10); -- +10 para padding extra
 			end);
 			
 			-- Função para atualizar o texto do SelectItems
