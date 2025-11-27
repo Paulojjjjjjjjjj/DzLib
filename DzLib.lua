@@ -1026,6 +1026,7 @@ function Update:Window(Config)
 		function main:Dropdown(text, option, var, callback, Multi)
 			-- Multi é um parâmetro opcional que permite múltipla seleção
 			local isMulti = Multi == true;
+			print("[DzLib] Creating dropdown:", text, "| isMulti:", isMulti, "| Multi param:", Multi)
 			local isdropping = false;
 			local selectedItems = {}; -- Tabela para armazenar itens selecionados (usado apenas em modo Multi)
 			local activeItem = nil; -- Item ativo (usado apenas em modo single)
