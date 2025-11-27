@@ -1275,7 +1275,8 @@ function Update:Window(Config)
 			updateItemsVisual();
 			updateSelectItemsText();
 			DropScroll.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y);
-			SelectItems.MouseButton1Click:Connect(function()
+			-- Função para toggle do dropdown
+			local function toggleDropdown()
 				if isdropping == false then
 					isdropping = true;
 					(TweenService:Create(DropdownFrameScroll, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -1301,6 +1302,27 @@ function Update:Window(Config)
                         Rotation = 0
                     })):Play();
 				end;
+			end);
+			
+			-- Criar overlay invisível para tornar todo o dropdown clicável
+			local DropdownClickArea = Instance.new("TextButton");
+			DropdownClickArea.Name = "DropdownClickArea";
+			DropdownClickArea.Parent = Dropdown;
+			DropdownClickArea.BackgroundColor3 = Color3.fromRGB(255, 255, 255);
+			DropdownClickArea.BackgroundTransparency = 1;
+			DropdownClickArea.BorderSizePixel = 0;
+			DropdownClickArea.Size = UDim2.new(1, 0, 0, 40);
+			DropdownClickArea.Position = UDim2.new(0, 0, 0, 0);
+			DropdownClickArea.Text = "";
+			DropdownClickArea.ZIndex = 2;
+			DropdownClickArea.AutoButtonColor = false;
+			
+			-- Conectar clique no overlay e no SelectItems
+			DropdownClickArea.MouseButton1Click:Connect(function()
+				toggleDropdown();
+			end);
+			SelectItems.MouseButton1Click:Connect(function()
+				toggleDropdown();
 			end);
 			local dropfunc = {};
 			function dropfunc:Add(t)
@@ -1703,7 +1725,7 @@ function Update:Window(Config)
 			Seperator.Name = "Seperator";
 			Seperator.Parent = MainFramePage;
 			Seperator.BackgroundColor3 = _G.Primary;
-			Seperator.BackgroundTransparency = 0.8;
+			Seperator.BackgroundTransparency = 1;
 			Seperator.Size = UDim2.new(1, 0, 0, 36);
 			Sep1.Name = "Sep1";
 			Sep1.Parent = Seperator;
