@@ -825,7 +825,7 @@ function Update:Window(Config)
 			Button.Name = "Button";
 			Button.Parent = MainFramePage;
 			Button.BackgroundColor3 = _G.Primary;
-			Button.BackgroundTransparency = 1;
+			Button.BackgroundTransparency = 0.8;
 			Button.Size = UDim2.new(1, 0, 0, 36);
 			UICorner.CornerRadius = UDim.new(0, 5);
 			UICorner.Parent = Button;
@@ -1685,8 +1685,11 @@ function Update:Window(Config)
 			Frame.Name = "Frame";
 			Frame.Parent = MainFramePage;
 			Frame.BackgroundColor3 = _G.Primary;
-			Frame.BackgroundTransparency = 1;
+			Frame.BackgroundTransparency = 0.8;
 			Frame.Size = UDim2.new(1, 0, 0, calculatedHeight);
+			local FrameCorner = Instance.new("UICorner");
+			FrameCorner.CornerRadius = UDim.new(0, 5);
+			FrameCorner.Parent = Frame;
 			Label.Name = "Label";
 			Label.Parent = Frame;
 			Label.BackgroundColor3 = Color3.fromRGB(255, 255, 255);
@@ -1731,7 +1734,7 @@ function Update:Window(Config)
 			Seperator.Name = "Seperator";
 			Seperator.Parent = MainFramePage;
 			Seperator.BackgroundColor3 = _G.Primary;
-			Seperator.BackgroundTransparency = 1;
+			Seperator.BackgroundTransparency = 0.8;
 			Seperator.Size = UDim2.new(1, 0, 0, 36);
 			Sep1.Name = "Sep1";
 			Sep1.Parent = Seperator;
