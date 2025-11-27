@@ -1107,6 +1107,7 @@ function Update:Window(Config)
 			DropScroll.Name = "DropScroll";
 			DropScroll.Parent = DropdownFrameScroll;
 			DropScroll.ScrollingDirection = Enum.ScrollingDirection.Y;
+			DropScroll.ScrollingEnabled = true;
 			DropScroll.Active = true;
 			DropScroll.BackgroundColor3 = Color3.fromRGB(255, 255, 255);
 			DropScroll.BackgroundTransparency = 1;
@@ -1116,6 +1117,9 @@ function Update:Window(Config)
 			DropScroll.AnchorPoint = Vector2.new(0, 0);
 			DropScroll.ClipsDescendants = false; -- Não clipar para permitir scroll completo
 			DropScroll.ScrollBarThickness = 5; -- Aumentar espessura da barra de scroll
+			DropScroll.ScrollBarImageTransparency = 0.3; -- Tornar barra mais visível
+			DropScroll.ElasticBehavior = Enum.ElasticBehavior.Never; -- Desabilitar elastic scroll
+			DropScroll.ScrollingSpeed = 20; -- Reduzir velocidade do scroll (padrão é 50)
 			DropScroll.ZIndex = 3;
 			DropScroll.CanvasSize = UDim2.new(0, 0, 0, 0); -- Inicializar CanvasSize
 			local PaddingDrop = Instance.new("UIPadding");
