@@ -1685,9 +1685,9 @@ function Update:Window(Config)
 			Label.Parent = Frame;
 			Label.BackgroundColor3 = Color3.fromRGB(255, 255, 255);
 			Label.BackgroundTransparency = 1;
-			Label.Size = UDim2.new(1, -30, 0, calculatedHeight);
+			Label.Size = UDim2.new(1, -20, 0, calculatedHeight);
 			Label.Font = Enum.Font.Nunito;
-			Label.Position = UDim2.new(0, 30, 0, 0);
+			Label.Position = UDim2.new(0, 10, 0, 0);
 			Label.AnchorPoint = Vector2.new(0, 0);
 			Label.TextColor3 = Color3.fromRGB(225, 225, 225);
 			Label.TextSize = textSize;
@@ -1695,26 +1695,106 @@ function Update:Window(Config)
 			Label.TextXAlignment = Enum.TextXAlignment.Left;
 			Label.TextYAlignment = Enum.TextYAlignment.Top;
 			Label.TextWrapped = true;
-			local ImageLabel = Instance.new("ImageLabel");
-			ImageLabel.Name = "ImageLabel";
-			ImageLabel.Parent = Frame;
-			ImageLabel.BackgroundColor3 = Color3.fromRGB(200, 200, 200);
-			ImageLabel.BackgroundTransparency = 1;
-			ImageLabel.ImageTransparency = 0;
-			ImageLabel.Position = UDim2.new(0, 10, 0, 0);
-			ImageLabel.Size = UDim2.new(0, 14, 0, 14);
-			ImageLabel.AnchorPoint = Vector2.new(0, 0);
-			ImageLabel.Image = "rbxassetid://10723415903";
-			ImageLabel.ImageColor3 = Color3.fromRGB(200, 200, 200);
 			function labelfunc:Set(newtext)
 				Label.Text = newtext;
 				-- Recalcula o tamanho quando o texto muda
 				local newLineCount = countLines(newtext);
 				local newHeight = math.max(minHeight, newLineCount * lineHeight);
 				Frame.Size = UDim2.new(1, 0, 0, newHeight);
-				Label.Size = UDim2.new(1, -30, 0, newHeight);
+				Label.Size = UDim2.new(1, -20, 0, newHeight);
 			end;
 			return labelfunc;
+		end;
+		function main:ButtonRow(text1, callback1, text2, callback2)
+			local ButtonRowFrame = Instance.new("Frame");
+			local UICorner = Instance.new("UICorner");
+			ButtonRowFrame.Name = "ButtonRow";
+			ButtonRowFrame.Parent = MainFramePage;
+			ButtonRowFrame.BackgroundColor3 = _G.Primary;
+			ButtonRowFrame.BackgroundTransparency = 1;
+			ButtonRowFrame.Size = UDim2.new(1, 0, 0, 36);
+			UICorner.CornerRadius = UDim.new(0, 5);
+			UICorner.Parent = ButtonRowFrame;
+			
+			-- Botão 1 (esquerda)
+			local Button1 = Instance.new("TextButton");
+			local UICorner1 = Instance.new("UICorner");
+			Button1.Name = "Button1";
+			Button1.Parent = ButtonRowFrame;
+			Button1.BackgroundColor3 = _G.Primary;
+			Button1.BackgroundTransparency = 0.8;
+			Button1.Size = UDim2.new(0.5, -5, 1, 0);
+			Button1.Position = UDim2.new(0, 0, 0, 0);
+			Button1.AutoButtonColor = false;
+			Button1.Text = "";
+			Button1.Font = Enum.Font.SourceSans;
+			Button1.TextColor3 = Color3.fromRGB(0, 0, 0);
+			Button1.TextSize = 11;
+			UICorner1.CornerRadius = UDim.new(0, 5);
+			UICorner1.Parent = Button1;
+			
+			local TextLabel1 = Instance.new("TextLabel");
+			TextLabel1.Name = "TextLabel1";
+			TextLabel1.Parent = Button1;
+			TextLabel1.BackgroundColor3 = _G.Primary;
+			TextLabel1.BackgroundTransparency = 1;
+			TextLabel1.AnchorPoint = Vector2.new(0.5, 0.5);
+			TextLabel1.Position = UDim2.new(0.5, 0, 0.5, 0);
+			TextLabel1.Size = UDim2.new(1, -10, 1, 0);
+			TextLabel1.Font = Enum.Font.Cartoon;
+			TextLabel1.RichText = true;
+			TextLabel1.Text = text1;
+			TextLabel1.TextXAlignment = Enum.TextXAlignment.Center;
+			TextLabel1.TextYAlignment = Enum.TextYAlignment.Center;
+			TextLabel1.TextColor3 = Color3.fromRGB(255, 255, 255);
+			TextLabel1.TextSize = 15;
+			TextLabel1.ClipsDescendants = true;
+			
+			-- Botão 2 (direita)
+			local Button2 = Instance.new("TextButton");
+			local UICorner2 = Instance.new("UICorner");
+			Button2.Name = "Button2";
+			Button2.Parent = ButtonRowFrame;
+			Button2.BackgroundColor3 = _G.Primary;
+			Button2.BackgroundTransparency = 0.8;
+			Button2.Size = UDim2.new(0.5, -5, 1, 0);
+			Button2.Position = UDim2.new(0.5, 5, 0, 0);
+			Button2.AutoButtonColor = false;
+			Button2.Text = "";
+			Button2.Font = Enum.Font.SourceSans;
+			Button2.TextColor3 = Color3.fromRGB(0, 0, 0);
+			Button2.TextSize = 11;
+			UICorner2.CornerRadius = UDim.new(0, 5);
+			UICorner2.Parent = Button2;
+			
+			local TextLabel2 = Instance.new("TextLabel");
+			TextLabel2.Name = "TextLabel2";
+			TextLabel2.Parent = Button2;
+			TextLabel2.BackgroundColor3 = _G.Primary;
+			TextLabel2.BackgroundTransparency = 1;
+			TextLabel2.AnchorPoint = Vector2.new(0.5, 0.5);
+			TextLabel2.Position = UDim2.new(0.5, 0, 0.5, 0);
+			TextLabel2.Size = UDim2.new(1, -10, 1, 0);
+			TextLabel2.Font = Enum.Font.Cartoon;
+			TextLabel2.RichText = true;
+			TextLabel2.Text = text2;
+			TextLabel2.TextXAlignment = Enum.TextXAlignment.Center;
+			TextLabel2.TextYAlignment = Enum.TextYAlignment.Center;
+			TextLabel2.TextColor3 = Color3.fromRGB(255, 255, 255);
+			TextLabel2.TextSize = 15;
+			TextLabel2.ClipsDescendants = true;
+			
+			-- Conectar callbacks
+			Button1.MouseButton1Click:Connect(function()
+				if callback1 then
+					callback1();
+				end;
+			end);
+			Button2.MouseButton1Click:Connect(function()
+				if callback2 then
+					callback2();
+				end;
+			end);
 		end;
 		function main:Seperator(text)
 			local Seperator = Instance.new("Frame");
