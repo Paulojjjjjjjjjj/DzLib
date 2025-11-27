@@ -815,6 +815,7 @@ function Update:Window(Config)
 		end);
 		local main = {};
 		function main:Button(text, callback)
+			local success, err = pcall(function()
 			local Button = Instance.new("TextButton");
 			local UICorner = Instance.new("UICorner");
 			local TextLabel = Instance.new("TextLabel");
@@ -857,10 +858,22 @@ function Update:Window(Config)
 			UICorner_2.CornerRadius = UDim.new(0, 5);
 			UICorner_2.Parent = Black;
 			Button.MouseButton1Click:Connect(function()
-				callback();
+				local success, err = pcall(function()
+					if callback then callback(); end;
+				end);
+				if not success then
+					warn("[DzLib Error] Button callback failed:", err);
+					print("Button text:", text);
+				end;
 			end);
+			end);
+			if not success then
+				warn("[DzLib Error] Failed to create Button:", err);
+				print("Button text:", text);
+			end;
 		end;
 		function main:Toggle(text, config, desc, callback)
+			local success, err = pcall(function()
 			config = config or false;
 			local toggled = config;
 			local UICorner = Instance.new("UICorner");
@@ -991,6 +1004,11 @@ function Update:Window(Config)
 				pcall(callback, toggled);
 			end;
 			return togglefunc;
+			end);
+			if not success then
+				warn("[DzLib Error] Failed to create Toggle:", err);
+				print("Toggle text:", text);
+			end;
 		end;
 		function main:Dropdown(text, option, var, callback, Multi)
 			-- Multi é um parâmetro opcional que permite múltipla seleção
@@ -1455,8 +1473,14 @@ function Update:Window(Config)
 				end;
 			end;
 			return dropfunc;
+			end);
+			if not success then
+				warn("[DzLib Error] Failed to create Dropdown:", err);
+				print("Dropdown text:", text);
+			end;
 		end;
 		function main:Slider(text, min, max, set, callback)
+			local success, err = pcall(function()
 			local Slider = Instance.new("Frame");
 			local slidercorner = Instance.new("UICorner");
 			local sliderr = Instance.new("Frame");
@@ -1595,6 +1619,11 @@ function Update:Window(Config)
 				end);
 			end;
 			return sliderfunc;
+			end);
+			if not success then
+				warn("[DzLib Error] Failed to create Slider:", err);
+				print("Slider text:", text);
+			end;
 		end;
 		function main:Textbox(text, disappear, callback)
 			local Textbox = Instance.new("Frame");
@@ -1652,6 +1681,7 @@ function Update:Window(Config)
 			return textboxfunc;
 		end;
 		function main:Label(text)
+			local success, err = pcall(function()
 			local Frame = Instance.new("Frame");
 			local Label = Instance.new("TextLabel");
 			local PaddingLabel = Instance.new("UIPadding");
@@ -1704,8 +1734,14 @@ function Update:Window(Config)
 				Label.Size = UDim2.new(1, -20, 0, newHeight);
 			end;
 			return labelfunc;
+			end);
+			if not success then
+				warn("[DzLib Error] Failed to create Label:", err);
+				print("Label text:", text);
+			end;
 		end;
 		function main:ButtonRow(text1, callback1, text2, callback2)
+			local success, err = pcall(function()
 			local ButtonRowFrame = Instance.new("Frame");
 			local UICorner = Instance.new("UICorner");
 			ButtonRowFrame.Name = "ButtonRow";
@@ -1786,15 +1822,28 @@ function Update:Window(Config)
 			
 			-- Conectar callbacks
 			Button1.MouseButton1Click:Connect(function()
-				if callback1 then
-					callback1();
+				local success1, err1 = pcall(function()
+					if callback1 then callback1(); end;
+				end);
+				if not success1 then
+					warn("[DzLib Error] ButtonRow Button1 callback failed:", err1);
+					print("Button1 text:", text1);
 				end;
 			end);
 			Button2.MouseButton1Click:Connect(function()
-				if callback2 then
-					callback2();
+				local success2, err2 = pcall(function()
+					if callback2 then callback2(); end;
+				end);
+				if not success2 then
+					warn("[DzLib Error] ButtonRow Button2 callback failed:", err2);
+					print("Button2 text:", text2);
 				end;
 			end);
+			end);
+			if not success then
+				warn("[DzLib Error] Failed to create ButtonRow:", err);
+				print("Button1 text:", text1, "| Button2 text:", text2);
+			end;
 		end;
 		function main:Seperator(text)
 			local Seperator = Instance.new("Frame");
@@ -1842,6 +1891,11 @@ function Update:Window(Config)
 		Sep3.Text = "<<";
 		Sep3.TextColor3 = Color3.fromRGB(138, 43, 226);
 		Sep3.TextSize = 14;
+			end);
+			if not success then
+				warn("[DzLib Error] Failed to create Seperator:", err);
+				print("Seperator text:", text);
+			end;
 		end;
 		function main:Line()
 			local Linee = Instance.new("Frame");
