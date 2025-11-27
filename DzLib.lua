@@ -1383,10 +1383,15 @@ function Update:Window(Config)
 						end;
 						pcall(callback, selectedArray);
 					else
-						activeItem = Item.Text;
+						-- Modo Normal: toggle do item (se já está selecionado, desmarca)
+						if activeItem == Item.Text then
+							activeItem = nil; -- Desmarcar
+						else
+							activeItem = Item.Text; -- Marcar novo item
+						end;
 						updateItemsVisual();
 						updateSelectItemsText();
-						pcall(callback, Item.Text);
+						pcall(callback, activeItem);
 					end;
 				end);
 				
