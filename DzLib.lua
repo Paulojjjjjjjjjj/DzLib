@@ -137,7 +137,7 @@ function Update:Notify(desc)
 	Title.BackgroundColor3 = _G.Primary;
 	Title.BackgroundTransparency = 1;
 	Title.Position = UDim2.new(0, 15, 0, 14);
-	Title.Size = UDim2.new(0, 10, 0, 20);
+	Title.Size = UDim2.new(1, -15, 0, 20);
 	Title.Font = Enum.Font.GothamBold;
 	Title.Text = "DZ HUB";
 	Title.TextColor3 = Color3.fromRGB(255, 255, 255);
@@ -146,8 +146,8 @@ function Update:Notify(desc)
 	Desc.Parent = Frame;
 	Desc.BackgroundColor3 = _G.Primary;
 	Desc.BackgroundTransparency = 1;
-	Desc.Position = UDim2.new(0, 55, 0, 33);
-	Desc.Size = UDim2.new(0, 10, 0, 10);
+	Desc.Position = UDim2.new(0, 15, 0, 33);
+	Desc.Size = UDim2.new(1, -15, 0, 20);
 	Desc.Font = Enum.Font.GothamSemibold;
 	Desc.TextTransparency = 0.3;
 	Desc.Text = desc;
