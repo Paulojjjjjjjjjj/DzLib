@@ -1119,7 +1119,6 @@ function Update:Window(Config)
 			DropScroll.ScrollBarThickness = 5; -- Aumentar espessura da barra de scroll
 			DropScroll.ScrollBarImageTransparency = 0.3; -- Tornar barra mais visível
 			DropScroll.ElasticBehavior = Enum.ElasticBehavior.Never; -- Desabilitar elastic scroll
-			DropScroll.ScrollingSpeed = 20; -- Reduzir velocidade do scroll (padrão é 50)
 			DropScroll.ZIndex = 3;
 			DropScroll.CanvasSize = UDim2.new(0, 0, 0, 0); -- Inicializar CanvasSize
 			local PaddingDrop = Instance.new("UIPadding");
