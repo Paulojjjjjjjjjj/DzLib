@@ -395,23 +395,40 @@ local SaveManager = {} do
 	end;
 
 	function SaveManager:RefreshConfigList()
-		local list = listfiles(self.Folder .. "/settings");
+		-- Garantir que a pasta existe antes de listar
+		self:BuildFolderTree();
+		
+		local settingsPath = self.Folder .. "/settings";
+		local list = {};
+		
+		-- Verificar se a pasta existe antes de listar
+		if isfolder(settingsPath) then
+			list = listfiles(settingsPath);
+		else
+			-- Se a pasta não existe, criar e retornar lista vazia
+			makefolder(settingsPath);
+			return {};
+		end;
 
 		local out = {};
 		for i = 1, #list do
 			local file = list[i];
-			local pos = #file;
-			local start = pos;
+			-- Verificar se o arquivo termina com .json
+			if file:sub(-5) == ".json" then
+				local pos = file:find(".json", 1, true);
+				local start = pos;
 
-			repeat
-				pos = pos - 1;
 				local char = file:sub(pos, pos);
-			until char == "/" or char == "\\" or char == "";
+				while char ~= "/" and char ~= "\\" and char ~= "" do
+					pos = pos - 1;
+					char = file:sub(pos, pos);
+				end;
 
-			if char == "/" or char == "\\" then
-				local name = file:sub(pos + 1, start - 1);
-				if name ~= "options" then
-					table.insert(out, name);
+				if char == "/" or char == "\\" then
+					local name = file:sub(pos + 1, start - 1);
+					if name ~= "options" and name ~= "" then
+						table.insert(out, name);
+					end;
 				end;
 			end;
 		end;
