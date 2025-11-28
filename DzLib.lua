@@ -568,6 +568,17 @@ local SaveManager = {} do
 			end;
 		end);
 
+		section:Button("Remove autoload", function()
+			local autoloadFile = self.Folder .. "/settings/autoload.txt";
+			if isfile(autoloadFile) then
+				local currentAutoload = readfile(autoloadFile);
+				delfile(autoloadFile);
+				self.Library:Notify(string.format("Removed autoload: %q", currentAutoload));
+			else
+				self.Library:Notify("No autoload config is set");
+			end;
+		end);
+
 		section:Button("Refresh list", function()
 			configList = self:RefreshConfigList();
 			if configListDropdown and configListDropdown.Refresh then
