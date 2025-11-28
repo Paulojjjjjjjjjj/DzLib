@@ -225,6 +225,302 @@ function Update:LoadAnimation()
 	-- Função removida - sempre retorna false
 	return false;
 end;
+-- Criar SaveManager antes da função Window para garantir disponibilidade
+local httpService = game:GetService("HttpService");
+local SaveManager = {} do
+	SaveManager.Folder = "DzHub/Configs";
+	SaveManager.Ignore = {};
+	SaveManager.Options = {};
+	SaveManager.Library = Update;
+
+	SaveManager.Parser = {
+		Toggle = {
+			Save = function(idx, object)
+				return { type = "Toggle", idx = idx, value = object.Value };
+			end,
+			Load = function(idx, data)
+				if SaveManager.Options[idx] then
+					if SaveManager.Options[idx].SetValue then
+						SaveManager.Options[idx].SetValue(data.value);
+					elseif SaveManager.Options[idx].Value ~= nil then
+						SaveManager.Options[idx].Value = data.value;
+					end;
+				end;
+			end,
+		},
+		Slider = {
+			Save = function(idx, object)
+				return { type = "Slider", idx = idx, value = tostring(object.Value) };
+			end,
+			Load = function(idx, data)
+				if SaveManager.Options[idx] then
+					local numValue = tonumber(data.value);
+					if SaveManager.Options[idx].SetValue then
+						SaveManager.Options[idx].SetValue(numValue);
+					elseif SaveManager.Options[idx].Value ~= nil then
+						SaveManager.Options[idx].Value = numValue;
+					end;
+				end;
+			end,
+		},
+		Dropdown = {
+			Save = function(idx, object)
+				local value = object.Value;
+				if type(value) == "table" then
+					return { type = "Dropdown", idx = idx, value = value, multi = true };
+				else
+					return { type = "Dropdown", idx = idx, value = value, multi = false };
+				end;
+			end,
+			Load = function(idx, data)
+				if SaveManager.Options[idx] then
+					local value = data.value;
+					if data.multi == true and type(value) == "string" then
+						value = {value};
+					end;
+					if data.multi == false and type(value) == "table" then
+						value = value[1] or "";
+					end;
+					if SaveManager.Options[idx].SetValue then
+						SaveManager.Options[idx].SetValue(value);
+					elseif SaveManager.Options[idx].Value ~= nil then
+						SaveManager.Options[idx].Value = value;
+					end;
+				end;
+			end,
+		},
+		Textbox = {
+			Save = function(idx, object)
+				return { type = "Textbox", idx = idx, text = object.Value };
+			end,
+			Load = function(idx, data)
+				if SaveManager.Options[idx] and type(data.text) == "string" then
+					if SaveManager.Options[idx].SetValue then
+						SaveManager.Options[idx].SetValue(data.text);
+					elseif SaveManager.Options[idx].Value ~= nil then
+						SaveManager.Options[idx].Value = data.text;
+					end;
+				end;
+			end,
+		},
+	};
+
+	function SaveManager:SetIgnoreIndexes(list)
+		for _, key in next, list do
+			self.Ignore[key] = true;
+		end;
+	end;
+
+	function SaveManager:SetFolder(folder)
+		self.Folder = folder;
+		self:BuildFolderTree();
+	end;
+
+	function SaveManager:Save(name)
+		if (not name) then
+			return false, "no config file is selected";
+		end;
+
+		local fullPath = self.Folder .. "/settings/" .. name .. ".json";
+
+		local data = {
+			objects = {}
+		};
+
+		for idx, option in next, SaveManager.Options do
+			if not self.Parser[option.Type] then continue end;
+			if self.Ignore[idx] then continue end;
+
+			if option.GetValue then
+				option.Value = option.GetValue();
+			end;
+
+			table.insert(data.objects, self.Parser[option.Type].Save(idx, option));
+		end;
+
+		local success, encoded = pcall(httpService.JSONEncode, httpService, data);
+		if not success then
+			return false, "failed to encode data";
+		end;
+
+		writefile(fullPath, encoded);
+		return true;
+	end;
+
+	function SaveManager:Load(name)
+		if (not name) then
+			return false, "no config file is selected";
+		end;
+
+		local file = self.Folder .. "/settings/" .. name .. ".json";
+		if not isfile(file) then return false, "invalid file" end;
+
+		local success, decoded = pcall(httpService.JSONDecode, httpService, readfile(file));
+		if not success then return false, "decode error" end;
+
+		for _, option in next, decoded.objects do
+			if self.Parser[option.type] then
+				task.spawn(function()
+					if SaveManager.Options[option.idx] then
+						SaveManager.Options[option.idx].Value = option.value or option.text;
+					end;
+					self.Parser[option.type].Load(option.idx, option);
+				end);
+			end;
+		end;
+
+		return true;
+	end;
+
+	function SaveManager:IgnoreThemeSettings()
+		self:SetIgnoreIndexes({
+			"InterfaceTheme", "AcrylicToggle", "TransparentToggle", "MenuKeybind"
+		});
+	end;
+
+	function SaveManager:BuildFolderTree()
+		local paths = {
+			"DzHub",
+			"DzHub/Configs",
+			self.Folder,
+			self.Folder .. "/settings"
+		};
+
+		for i = 1, #paths do
+			local str = paths[i];
+			if not isfolder(str) then
+				makefolder(str);
+			end;
+		end;
+	end;
+
+	function SaveManager:RefreshConfigList()
+		local list = listfiles(self.Folder .. "/settings");
+
+		local out = {};
+		for i = 1, #list do
+			local file = list[i];
+			local pos = #file;
+			local start = pos;
+
+			repeat
+				pos = pos - 1;
+				local char = file:sub(pos, pos);
+			until char == "/" or char == "\\" or char == "";
+
+			if char == "/" or char == "\\" then
+				local name = file:sub(pos + 1, start - 1);
+				if name ~= "options" then
+					table.insert(out, name);
+				end;
+			end;
+		end;
+
+		return out;
+	end;
+
+	function SaveManager:SetLibrary(library)
+		self.Library = library;
+	end;
+
+	function SaveManager:RegisterOption(idx, optionType, getValueFunc, setValueFunc)
+		SaveManager.Options[idx] = {
+			Type = optionType,
+			Value = nil,
+			GetValue = getValueFunc,
+			SetValue = setValueFunc
+		};
+		if getValueFunc then
+			SaveManager.Options[idx].Value = getValueFunc();
+		end;
+	end;
+
+	function SaveManager:LoadAutoloadConfig()
+		if isfile(self.Folder .. "/settings/autoload.txt") then
+			local name = readfile(self.Folder .. "/settings/autoload.txt");
+			local success, err = self:Load(name);
+			if not success then
+				return;
+			end;
+		end;
+	end;
+
+	function SaveManager:BuildConfigSection(tab)
+		assert(self.Library, "Must set SaveManager.Library");
+
+		local section = tab:AddSection("Configuration");
+
+		local configName = "";
+		local selectedConfig = nil;
+
+		section:Textbox("Config name", nil, function(value)
+			configName = value;
+		end);
+
+		local configList = self:RefreshConfigList();
+		section:Dropdown("Config list", configList, configList[1] or "", function(value)
+			selectedConfig = value;
+		end);
+
+		section:Button("Save", function()
+			if not configName or configName == "" then
+				return self.Library:Notify("Please enter a config name");
+			end;
+
+			local success, err = self:Save(configName);
+			if success then
+				self.Library:Notify(string.format("Saved config %q", configName));
+			else
+				self.Library:Notify(string.format("Failed to save: %s", err or "unknown error"));
+			end;
+		end);
+
+		section:Button("Load", function()
+			local name = selectedConfig;
+			if not name then
+				return self.Library:Notify("Please select a config first");
+			end;
+
+			local success, err = self:Load(name);
+			if success then
+				self.Library:Notify(string.format("Loaded config %q", name));
+			else
+				self.Library:Notify(string.format("Failed to load: %s", err or "unknown error"));
+			end;
+		end);
+
+		section:Button("Delete", function()
+			local name = selectedConfig;
+			if not name then
+				return self.Library:Notify("Please select a config first");
+			end;
+
+			local file = self.Folder .. "/settings/" .. name .. ".json";
+			if isfile(file) then
+				delfile(file);
+				self.Library:Notify(string.format("Deleted config %q", name));
+			else
+				self.Library:Notify("Config file not found");
+			end;
+		end);
+
+		section:Button("Set as autoload", function()
+			local name = selectedConfig;
+			if not name then
+				return self.Library:Notify("Please select a config first");
+			end;
+
+			writefile(self.Folder .. "/settings/autoload.txt", name);
+			self.Library:Notify(string.format("Set %q to auto load", name));
+		end);
+
+		SaveManager:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName" });
+	end;
+end;
+
+-- Atribuir SaveManager ao Update antes da função Window
+Update.SaveManager = SaveManager;
+
 function Update:Window(Config)
 	assert(Config.SubTitle, "v4");
 	local WindowConfig = {
@@ -247,6 +543,8 @@ function Update:Window(Config)
 	uitab._DzHub = DzHub;
 	-- Garantir que uitab sempre exista
 	assert(uitab ~= nil, "uitab não pode ser nil");
+	-- Contador de índice para SaveManager (auto-registro)
+	local componentIndex = 0;
 	local OutlineMain = Instance.new("Frame");
 	OutlineMain.Name = "OutlineMain";
 	OutlineMain.Parent = DzHub;
@@ -1011,8 +1309,10 @@ function Update:Window(Config)
 				pcall(callback, toggled);
 			end;
 			local togglefunc = {};
+			togglefunc.Value = toggled;
 			function togglefunc:Set(newValue)
 				toggled = newValue;
+				self.Value = toggled;
 				if toggled then
 					Circle:TweenPosition(UDim2.new(0, 17, 0.5, 0), "Out", "Sine", 0.2, true);
 					(TweenService:Create(ToggleImage, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -1028,6 +1328,29 @@ function Update:Window(Config)
 				end;
 				pcall(callback, toggled);
 			end;
+			function togglefunc:GetValue()
+				return toggled;
+			end;
+			function togglefunc:SetValue(newValue)
+				self:Set(newValue);
+			end;
+			-- Auto-registro no SaveManager
+			componentIndex = componentIndex + 1;
+			local optionIdx = text;
+			-- Registrar imediatamente se SaveManager já existe, senão aguardar
+			task.spawn(function()
+				local sm = Update.SaveManager or _G.DzLibSaveManager;
+				if not sm then
+					repeat task.wait(0.1) until Update.SaveManager or _G.DzLibSaveManager;
+					sm = Update.SaveManager or _G.DzLibSaveManager;
+				end;
+				if sm and sm.RegisterOption then
+					sm:RegisterOption(optionIdx, "Toggle",
+						function() return togglefunc:GetValue() end,
+						function(value) togglefunc:SetValue(value) end
+					);
+				end;
+			end);
 			return togglefunc;
 		end;
 		function main:Dropdown(text, option, var, callback, Multi)
@@ -1481,6 +1804,7 @@ function Update:Window(Config)
 					for item in pairs(selectedItems) do
 						table.insert(selectedArray, item);
 					end;
+					dropfunc.Value = selectedArray;
 					pcall(callback, selectedArray);
 				else
 					-- Modo Single: newValue é um valor único
@@ -1488,10 +1812,44 @@ function Update:Window(Config)
 						activeItem = tostring(newValue);
 						updateItemsVisual();
 						updateSelectItemsText();
+						dropfunc.Value = newValue;
 						pcall(callback, newValue);
+					else
+						dropfunc.Value = nil;
 					end;
 				end;
 			end;
+			function dropfunc:GetValue()
+				if isMulti then
+					local selectedArray = {};
+					for item in pairs(selectedItems) do
+						table.insert(selectedArray, item);
+					end;
+					return selectedArray;
+				else
+					return activeItem;
+				end;
+			end;
+			function dropfunc:SetValue(newValue)
+				self:Set(newValue);
+			end;
+			dropfunc.Value = dropfunc:GetValue();
+			-- Auto-registro no SaveManager
+			componentIndex = componentIndex + 1;
+			local optionIdx = text;
+			task.spawn(function()
+				local sm = Update.SaveManager or _G.DzLibSaveManager;
+				if not sm then
+					repeat task.wait(0.1) until Update.SaveManager or _G.DzLibSaveManager;
+					sm = Update.SaveManager or _G.DzLibSaveManager;
+				end;
+				if sm and sm.RegisterOption then
+					sm:RegisterOption(optionIdx, "Dropdown",
+						function() return dropfunc:GetValue() end,
+						function(value) dropfunc:SetValue(value) end
+					);
+				end;
+			end);
 			return dropfunc;
 		end;
 		function main:Slider(text, min, max, set, callback)
@@ -1621,10 +1979,13 @@ function Update:Window(Config)
 				end;
 			end);
 			local sliderfunc = {};
+			sliderfunc.Value = set;
 			function sliderfunc:Set(newValue)
 				-- Define um novo valor para o slider (compatibilidade)
 				local clampedValue = math.clamp(tonumber(newValue) or set, min, max);
 				local percentage = (clampedValue - min) / (max - min);
+				Value = clampedValue;
+				self.Value = clampedValue;
 				ValueText.Text = tostring(clampedValue);
 				bar1.Size = UDim2.new(0, percentage * 100, 0, 4);
 				circlebar.Position = UDim2.new(0, percentage * 100 - 5, 0, -5);
@@ -1632,6 +1993,28 @@ function Update:Window(Config)
 					callback(clampedValue);
 				end);
 			end;
+			function sliderfunc:GetValue()
+				return Value or set;
+			end;
+			function sliderfunc:SetValue(newValue)
+				self:Set(newValue);
+			end;
+			-- Auto-registro no SaveManager
+			componentIndex = componentIndex + 1;
+			local optionIdx = text;
+			task.spawn(function()
+				local sm = Update.SaveManager or _G.DzLibSaveManager;
+				if not sm then
+					repeat task.wait(0.1) until Update.SaveManager or _G.DzLibSaveManager;
+					sm = Update.SaveManager or _G.DzLibSaveManager;
+				end;
+				if sm and sm.RegisterOption then
+					sm:RegisterOption(optionIdx, "Slider",
+						function() return sliderfunc:GetValue() end,
+						function(value) sliderfunc:SetValue(value) end
+					);
+				end;
+			end);
 			return sliderfunc;
 		end;
 		function main:Textbox(text, disappear, callback)
@@ -1681,12 +2064,40 @@ function Update:Window(Config)
 			UICorner.CornerRadius = UDim.new(0, 5);
 			UICorner.Parent = RealTextbox;
 			local textboxfunc = {};
+			textboxfunc.Value = "";
 			function textboxfunc:Set(newValue)
 				if type(newValue) == "string" then
 					RealTextbox.Text = newValue;
+					self.Value = newValue;
 					pcall(callback, newValue);
 				end;
 			end;
+			function textboxfunc:GetValue()
+				return RealTextbox.Text or "";
+			end;
+			function textboxfunc:SetValue(newValue)
+				self:Set(newValue);
+			end;
+			-- Atualizar Value quando o texto mudar
+			RealTextbox:GetPropertyChangedSignal("Text"):Connect(function()
+				textboxfunc.Value = RealTextbox.Text;
+			end);
+			-- Auto-registro no SaveManager
+			componentIndex = componentIndex + 1;
+			local optionIdx = text;
+			task.spawn(function()
+				local sm = Update.SaveManager or _G.DzLibSaveManager;
+				if not sm then
+					repeat task.wait(0.1) until Update.SaveManager or _G.DzLibSaveManager;
+					sm = Update.SaveManager or _G.DzLibSaveManager;
+				end;
+				if sm and sm.RegisterOption then
+					sm:RegisterOption(optionIdx, "Textbox",
+						function() return textboxfunc:GetValue() end,
+						function(value) textboxfunc:SetValue(value) end
+					);
+				end;
+			end);
 			return textboxfunc;
 		end;
 		function main:Label(text)
@@ -2089,372 +2500,7 @@ function Update:Hide()
 	end;
 end;
 
--- SaveManager para DzLib
--- Exemplo de uso:
---[[
-	local Window = DzLib:Window({...})
-	local Tab = Window:Tab("Main", "icon")
-	
-	-- Registrar opções manualmente
-	local toggleValue = false;
-	Tab:Toggle("My Toggle", false, nil, function(value)
-		toggleValue = value;
-	end);
-	
-	-- Registrar no SaveManager
-	DzLib.SaveManager:RegisterOption("MyToggle", "Toggle", 
-		function() return toggleValue end,
-		function(value) 
-			toggleValue = value;
-			-- Atualizar visual do toggle se necessário
-		end
-	);
-	
-	-- Criar seção de configuração
-	DzLib.SaveManager:SetLibrary(DzLib);
-	DzLib.SaveManager:SetFolder("MyScriptSettings");
-	local SettingsTab = Window:Tab("Settings", "settings");
-	DzLib.SaveManager:BuildConfigSection(SettingsTab);
-	
-	-- Carregar config automática
-	DzLib.SaveManager:LoadAutoloadConfig();
-]]
-
-local httpService = game:GetService("HttpService");
-
-local SaveManager = {} do
-	SaveManager.Folder = "DzHub/Configs";
-	SaveManager.Ignore = {};
-	SaveManager.Options = {};
-	SaveManager.Library = Update;
-
-	SaveManager.Parser = {
-		Toggle = {
-			Save = function(idx, object)
-				return { type = "Toggle", idx = idx, value = object.Value };
-			end,
-			Load = function(idx, data)
-				if SaveManager.Options[idx] then
-					if SaveManager.Options[idx].SetValue then
-						SaveManager.Options[idx].SetValue(data.value);
-					elseif SaveManager.Options[idx].Value ~= nil then
-						SaveManager.Options[idx].Value = data.value;
-					end;
-				end;
-			end,
-		},
-		Slider = {
-			Save = function(idx, object)
-				return { type = "Slider", idx = idx, value = tostring(object.Value) };
-			end,
-			Load = function(idx, data)
-				if SaveManager.Options[idx] then
-					local numValue = tonumber(data.value);
-					if SaveManager.Options[idx].SetValue then
-						SaveManager.Options[idx].SetValue(numValue);
-					elseif SaveManager.Options[idx].Value ~= nil then
-						SaveManager.Options[idx].Value = numValue;
-					end;
-				end;
-			end,
-		},
-		Dropdown = {
-			Save = function(idx, object)
-				-- Suporta tanto valores únicos (string) quanto múltiplos (table)
-				local value = object.Value;
-				if type(value) == "table" then
-					-- Multi dropdown: salva como tabela
-					return { type = "Dropdown", idx = idx, value = value, multi = true };
-				else
-					-- Single dropdown: salva como string
-					return { type = "Dropdown", idx = idx, value = value, multi = false };
-				end;
-			end,
-			Load = function(idx, data)
-				if SaveManager.Options[idx] then
-					local value = data.value;
-					-- Se o dado salvo tinha multi=true mas o valor é string, converte para tabela
-					if data.multi == true and type(value) == "string" then
-						value = {value};
-					end;
-					-- Se o dado salvo tinha multi=false mas o valor é tabela, pega o primeiro item
-					if data.multi == false and type(value) == "table" then
-						value = value[1] or "";
-					end;
-					if SaveManager.Options[idx].SetValue then
-						SaveManager.Options[idx].SetValue(value);
-					elseif SaveManager.Options[idx].Value ~= nil then
-						SaveManager.Options[idx].Value = value;
-					end;
-				end;
-			end,
-		},
-		Textbox = {
-			Save = function(idx, object)
-				return { type = "Textbox", idx = idx, text = object.Value };
-			end,
-			Load = function(idx, data)
-				if SaveManager.Options[idx] and type(data.text) == "string" then
-					if SaveManager.Options[idx].SetValue then
-						SaveManager.Options[idx].SetValue(data.text);
-					elseif SaveManager.Options[idx].Value ~= nil then
-						SaveManager.Options[idx].Value = data.text;
-					end;
-				end;
-			end,
-		},
-	};
-
-	function SaveManager:SetIgnoreIndexes(list)
-		for _, key in next, list do
-			self.Ignore[key] = true;
-		end;
-	end;
-
-	function SaveManager:SetFolder(folder)
-		self.Folder = folder;
-		self:BuildFolderTree();
-	end;
-
-	function SaveManager:Save(name)
-		if (not name) then
-			return false, "no config file is selected";
-		end;
-
-		local fullPath = self.Folder .. "/settings/" .. name .. ".json";
-
-		local data = {
-			objects = {}
-		};
-
-		for idx, option in next, SaveManager.Options do
-			if not self.Parser[option.Type] then continue end;
-			if self.Ignore[idx] then continue end;
-
-			-- Atualiza o valor se houver função GetValue
-			if option.GetValue then
-				option.Value = option.GetValue();
-			end;
-
-			table.insert(data.objects, self.Parser[option.Type].Save(idx, option));
-		end;
-
-		local success, encoded = pcall(httpService.JSONEncode, httpService, data);
-		if not success then
-			return false, "failed to encode data";
-		end;
-
-		writefile(fullPath, encoded);
-		return true;
-	end;
-
-	function SaveManager:Load(name)
-		if (not name) then
-			return false, "no config file is selected";
-		end;
-
-		local file = self.Folder .. "/settings/" .. name .. ".json";
-		if not isfile(file) then return false, "invalid file" end;
-
-		local success, decoded = pcall(httpService.JSONDecode, httpService, readfile(file));
-		if not success then return false, "decode error" end;
-
-		for _, option in next, decoded.objects do
-			if self.Parser[option.type] then
-				task.spawn(function()
-					-- Atualiza o valor no objeto antes de carregar
-					if SaveManager.Options[option.idx] then
-						SaveManager.Options[option.idx].Value = option.value or option.text;
-					end;
-					self.Parser[option.type].Load(option.idx, option);
-				end);
-			end;
-		end;
-
-		return true;
-	end;
-
-	function SaveManager:IgnoreThemeSettings()
-		self:SetIgnoreIndexes({
-			"InterfaceTheme", "AcrylicToggle", "TransparentToggle", "MenuKeybind"
-		});
-	end;
-
-	function SaveManager:BuildFolderTree()
-		-- Cria a estrutura de pastas organizada:
-		-- DzHub/
-		--   Configs/
-		--     settings/
-		local paths = {
-			"DzHub",                    -- Pasta principal
-			"DzHub/Configs",            -- Pasta de configurações
-			self.Folder,                -- DzHub/Configs (mesmo que acima, mas garante)
-			self.Folder .. "/settings"  -- DzHub/Configs/settings (onde ficam os .json)
-		};
-
-		for i = 1, #paths do
-			local str = paths[i];
-			if not isfolder(str) then
-				makefolder(str);
-			end;
-		end;
-	end;
-
-	function SaveManager:RefreshConfigList()
-		local list = listfiles(self.Folder .. "/settings");
-
-		local out = {};
-		for i = 1, #list do
-			local file = list[i];
-			if file:sub(-5) == ".json" then
-				local pos = file:find(".json", 1, true);
-				local start = pos;
-
-				local char = file:sub(pos, pos);
-				while char ~= "/" and char ~= "\\" and char ~= "" do
-					pos = pos - 1;
-					char = file:sub(pos, pos);
-				end;
-
-				if char == "/" or char == "\\" then
-					local name = file:sub(pos + 1, start - 1);
-					if name ~= "options" then
-						table.insert(out, name);
-					end;
-				end;
-			end;
-		end;
-
-		return out;
-	end;
-
-	function SaveManager:SetLibrary(library)
-		self.Library = library;
-	end;
-
-	function SaveManager:RegisterOption(idx, optionType, getValueFunc, setValueFunc)
-		-- Registra uma opção manualmente
-		-- idx: identificador único da opção
-		-- optionType: "Toggle", "Slider", "Dropdown", "Textbox"
-		-- getValueFunc: função que retorna o valor atual
-		-- setValueFunc: função que define o valor
-		SaveManager.Options[idx] = {
-			Type = optionType,
-			Value = nil,
-			GetValue = getValueFunc,
-			SetValue = setValueFunc
-		};
-		-- Inicializa o valor
-		if getValueFunc then
-			SaveManager.Options[idx].Value = getValueFunc();
-		end;
-	end;
-
-	function SaveManager:LoadAutoloadConfig()
-		if isfile(self.Folder .. "/settings/autoload.txt") then
-			local name = readfile(self.Folder .. "/settings/autoload.txt");
-
-			local success, err = self:Load(name);
-			if not success then
-				-- Silenciosamente falha ao carregar (sem notificação)
-				return;
-			end;
-
-			-- Carrega silenciosamente (sem notificação)
-		end;
-	end;
-
-	function SaveManager:BuildConfigSection(tab)
-		assert(self.Library, "Must set SaveManager.Library");
-
-		local section = tab:AddSection("Configuration");
-
-		local configName = "";
-		local selectedConfig = nil;
-
-		-- Input para nome da config
-		section:Textbox("Config name", nil, function(value)
-			configName = value;
-		end);
-
-		-- Dropdown para lista de configs
-		local configList = self:RefreshConfigList();
-		local configListDropdown = section:Dropdown("Config list", configList, nil, function(value)
-			selectedConfig = value;
-		end);
-
-		-- Botão para criar config
-		section:Button("Create config", function()
-			local name = configName;
-			if name:gsub(" ", "") == "" then
-				name = "config_" .. os.time();
-			end;
-
-			local success, err = self:Save(name);
-			if not success then
-				return self.Library:Notify("Failed to save config: " .. err);
-			end;
-
-			self.Library:Notify(string.format("Created config %q", name));
-			configList = self:RefreshConfigList();
-			configListDropdown:SetValues(configList);
-		end);
-
-		-- Botão para carregar config
-		section:Button("Load config", function()
-			local name = selectedConfig;
-			if not name then
-				return self.Library:Notify("Please select a config first");
-			end;
-
-			local success, err = self:Load(name);
-			if not success then
-				return self.Library:Notify("Failed to load config: " .. err);
-			end;
-
-			self.Library:Notify(string.format("Loaded config %q", name));
-		end);
-
-		-- Botão para sobrescrever config
-		section:Button("Overwrite config", function()
-			local name = selectedConfig;
-			if not name then
-				return self.Library:Notify("Please select a config first");
-			end;
-
-			local success, err = self:Save(name);
-			if not success then
-				return self.Library:Notify("Failed to overwrite config: " .. err);
-			end;
-
-			self.Library:Notify(string.format("Overwrote config %q", name));
-		end);
-
-		-- Botão para atualizar lista
-		section:Button("Refresh list", function()
-			configList = self:RefreshConfigList();
-			configListDropdown:SetValues(configList);
-		end);
-
-		-- Botão para autoload
-		section:Button("Set as autoload", function()
-			local name = selectedConfig;
-			if not name then
-				return self.Library:Notify("Please select a config first");
-			end;
-
-			writefile(self.Folder .. "/settings/autoload.txt", name);
-			self.Library:Notify(string.format("Set %q to auto load", name));
-		end);
-
-		SaveManager:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName" });
-	end;
-
-	SaveManager:BuildFolderTree();
-end;
-
--- Adicionar SaveManager ao Update
-Update.SaveManager = SaveManager;
+-- SaveManager já foi definido antes da função Window
 
 return Update;
 
