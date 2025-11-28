@@ -648,6 +648,13 @@ function Update:Window(Config)
 		end;
 	end);
 	function uitab:Tab(text, img)
+		-- Pré-carregar o asset se for uma imagem
+		if img and type(img) == "string" and img:match("rbxassetid://") then
+			pcall(function()
+				local ContentProvider = game:GetService("ContentProvider");
+				ContentProvider:PreloadAsync({img});
+			end);
+		end;
 		local BtnStroke = Instance.new("UIStroke");
 		local TabButton = Instance.new("TextButton");
 		local title = Instance.new("TextLabel");
