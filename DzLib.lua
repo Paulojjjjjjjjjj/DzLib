@@ -1691,6 +1691,7 @@ function Update:Window(Config)
 			Label.AnchorPoint = Vector2.new(0, 0);
 			Label.TextColor3 = Color3.fromRGB(225, 225, 225);
 			Label.TextSize = textSize;
+			Label.RichText = true;
 			Label.Text = text;
 			Label.TextXAlignment = Enum.TextXAlignment.Left;
 			Label.TextYAlignment = Enum.TextYAlignment.Center;
