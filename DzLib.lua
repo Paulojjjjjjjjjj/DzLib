@@ -51,8 +51,6 @@ function MakeDraggable(topbarobject, object)
 end;
 -- Variável global para controlar se o botão de toggle deve ser criado
 -- Se não foi definido, verifica nas configurações salvas
--- Mas se foi explicitamente definido antes de carregar a DzLib, respeita esse valor
-local wasExplicitlySet = _G.DzLib_ShowToggleButton ~= nil;
 if _G.DzLib_ShowToggleButton == nil then
 	-- Tentar carregar configuração salva
 	if readfile and isfile and isfolder then
