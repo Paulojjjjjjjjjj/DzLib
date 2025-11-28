@@ -458,7 +458,7 @@ local SaveManager = {} do
 		end);
 
 		local configList = self:RefreshConfigList();
-		section:Dropdown("Config list", configList, configList[1] or "", function(value)
+		local configListDropdown = section:Dropdown("Config list", configList, configList[1] or "", function(value)
 			selectedConfig = value;
 		end);
 
@@ -469,6 +469,16 @@ local SaveManager = {} do
 
 			local success, err = self:Save(configName);
 			if success then
+				-- Atualizar lista de configs e o dropdown
+				configList = self:RefreshConfigList();
+				if configListDropdown and configListDropdown.Refresh then
+					configListDropdown:Refresh(configList);
+					-- Selecionar a config recém-salva
+					if configListDropdown.Set then
+						configListDropdown:Set(configName);
+					end;
+				end;
+				selectedConfig = configName;
 				self.Library:Notify(string.format("Saved config %q", configName));
 			else
 				self.Library:Notify(string.format("Failed to save: %s", err or "unknown error"));
@@ -498,6 +508,16 @@ local SaveManager = {} do
 			local file = self.Folder .. "/settings/" .. name .. ".json";
 			if isfile(file) then
 				delfile(file);
+				-- Atualizar lista de configs e o dropdown
+				configList = self:RefreshConfigList();
+				if configListDropdown and configListDropdown.Refresh then
+					configListDropdown:Refresh(configList);
+					-- Limpar seleção se a config deletada estava selecionada
+					if configListDropdown.Set then
+						configListDropdown:Set(configList[1] or "");
+					end;
+				end;
+				selectedConfig = configList[1] or nil;
 				self.Library:Notify(string.format("Deleted config %q", name));
 			else
 				self.Library:Notify("Config file not found");
@@ -512,6 +532,14 @@ local SaveManager = {} do
 
 			writefile(self.Folder .. "/settings/autoload.txt", name);
 			self.Library:Notify(string.format("Set %q to auto load", name));
+		end);
+
+		section:Button("Refresh list", function()
+			configList = self:RefreshConfigList();
+			if configListDropdown and configListDropdown.Refresh then
+				configListDropdown:Refresh(configList);
+			end;
+			self.Library:Notify("Config list refreshed");
 		end);
 
 		SaveManager:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName" });
