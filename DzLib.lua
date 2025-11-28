@@ -681,19 +681,6 @@ function Update:Window(Config)
 		SelectedTab.AnchorPoint = Vector2.new(0, 0.5);
 		UICorner.CornerRadius = UDim.new(0, 100);
 		UICorner.Parent = SelectedTab;
-		Title.Parent = TabButton;
-		Title.Name = "Title";
-		Title.BackgroundColor3 = Color3.fromRGB(150, 150, 150);
-		Title.BackgroundTransparency = 1;
-		Title.Position = UDim2.new(0, 30, 0.5, 0);
-		Title.Size = UDim2.new(0, 100, 0, 30);
-		Title.Font = Enum.Font.Roboto;
-		Title.Text = text;
-		Title.AnchorPoint = Vector2.new(0, 0.5);
-		Title.TextColor3 = Color3.fromRGB(255, 255, 255);
-		Title.TextTransparency = 0.4;
-		Title.TextSize = 14;
-		Title.TextXAlignment = Enum.TextXAlignment.Left;
 		local IDK = Instance.new("ImageLabel");
 		IDK.Name = "IDK";
 		IDK.Parent = TabButton;
@@ -704,6 +691,34 @@ function Update:Window(Config)
 		IDK.Size = UDim2.new(0, 15, 0, 15);
 		IDK.AnchorPoint = Vector2.new(0, 0.5);
 		IDK.Image = img;
+		local Separator = Instance.new("TextLabel");
+		Separator.Name = "Separator";
+		Separator.Parent = TabButton;
+		Separator.BackgroundColor3 = Color3.fromRGB(255, 255, 255);
+		Separator.BackgroundTransparency = 1;
+		Separator.Position = UDim2.new(0, 25, 0.5, 0);
+		Separator.Size = UDim2.new(0, 5, 0, 15);
+		Separator.AnchorPoint = Vector2.new(0, 0.5);
+		Separator.Font = Enum.Font.Roboto;
+		Separator.Text = "|";
+		Separator.TextColor3 = Color3.fromRGB(255, 255, 255);
+		Separator.TextTransparency = 0.4;
+		Separator.TextSize = 14;
+		Separator.TextXAlignment = Enum.TextXAlignment.Center;
+		Separator.TextYAlignment = Enum.TextYAlignment.Center;
+		Title.Parent = TabButton;
+		Title.Name = "Title";
+		Title.BackgroundColor3 = Color3.fromRGB(150, 150, 150);
+		Title.BackgroundTransparency = 1;
+		Title.Position = UDim2.new(0, 33, 0.5, 0);
+		Title.Size = UDim2.new(0, 100, 0, 30);
+		Title.Font = Enum.Font.Roboto;
+		Title.Text = text;
+		Title.AnchorPoint = Vector2.new(0, 0.5);
+		Title.TextColor3 = Color3.fromRGB(255, 255, 255);
+		Title.TextTransparency = 0.4;
+		Title.TextSize = 14;
+		Title.TextXAlignment = Enum.TextXAlignment.Left;
 		CreateRounded(TabButton, 6);
 		local MainFramePage = Instance.new("ScrollingFrame");
 		MainFramePage.Name = text .. "_Page";
@@ -736,6 +751,11 @@ function Update:Window(Config)
 					(TweenService:Create(v.IDK, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 						ImageTransparency = 0.4
 					})):Play();
+					if v:FindFirstChild("Separator") then
+						(TweenService:Create(v.Separator, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+							TextTransparency = 0.4
+						})):Play();
+					end;
 					(TweenService:Create(v.Title, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 						TextTransparency = 0.4
 					})):Play();
@@ -748,6 +768,9 @@ function Update:Window(Config)
 				})):Play();
 				(TweenService:Create(IDK, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					ImageTransparency = 0
+				})):Play();
+				(TweenService:Create(Separator, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+					TextTransparency = 0
 				})):Play();
 				(TweenService:Create(Title, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					TextTransparency = 0
@@ -772,6 +795,11 @@ function Update:Window(Config)
 					(TweenService:Create(v.IDK, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 						ImageTransparency = 0.4
 					})):Play();
+					if v:FindFirstChild("Separator") then
+						(TweenService:Create(v.Separator, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+							TextTransparency = 0.4
+						})):Play();
+					end;
 					(TweenService:Create(v.Title, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 						TextTransparency = 0.4
 					})):Play();
@@ -784,6 +812,9 @@ function Update:Window(Config)
 				})):Play();
 				(TweenService:Create(IDK, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					ImageTransparency = 0
+				})):Play();
+				(TweenService:Create(Separator, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+					TextTransparency = 0
 				})):Play();
 				(TweenService:Create(Title, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					TextTransparency = 0
@@ -1941,6 +1972,11 @@ function Update:Window(Config)
 								ImageTransparency = 0.4
 							})):Play();
 						end;
+						if v:FindFirstChild("Separator") then
+							(TweenService:Create(v.Separator, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+								TextTransparency = 0.4
+							})):Play();
+						end;
 						if v:FindFirstChild("Title") then
 							(TweenService:Create(v.Title, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 								TextTransparency = 0.4
@@ -1960,6 +1996,11 @@ function Update:Window(Config)
 				if TabButton:FindFirstChild("IDK") then
 					(TweenService:Create(TabButton.IDK, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 						ImageTransparency = 0
+					})):Play();
+				end;
+				if TabButton:FindFirstChild("Separator") then
+					(TweenService:Create(TabButton.Separator, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+						TextTransparency = 0
 					})):Play();
 				end;
 				if TabButton:FindFirstChild("Title") then
