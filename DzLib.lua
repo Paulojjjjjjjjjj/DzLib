@@ -469,6 +469,7 @@ local SaveManager = {} do
 
 		local configName = "";
 		local selectedConfig = nil;
+		local autoloadConfirm = nil; -- Variável para confirmação de autoload
 
 		section:Textbox("Config name", nil, function(value)
 			configName = value;
@@ -547,8 +548,24 @@ local SaveManager = {} do
 				return self.Library:Notify("Please select a config first");
 			end;
 
-			writefile(self.Folder .. "/settings/autoload.txt", name);
-			self.Library:Notify(string.format("Set %q to auto load", name));
+			-- Pedir confirmação antes de definir como autoload (clique duplo)
+			if autoloadConfirm == name then
+				-- Segunda confirmação: definir como autoload
+				writefile(self.Folder .. "/settings/autoload.txt", name);
+				self.Library:Notify(string.format("Set %q to auto load", name));
+				autoloadConfirm = nil; -- Resetar confirmação
+			else
+				-- Primeira confirmação: avisar e pedir para clicar novamente
+				autoloadConfirm = name;
+				self.Library:Notify(string.format("Click again to confirm setting %q as autoload", name), 3);
+				-- Resetar confirmação após 5 segundos
+				task.spawn(function()
+					task.wait(5);
+					if autoloadConfirm == name then
+						autoloadConfirm = nil;
+					end;
+				end);
+			end;
 		end);
 
 		section:Button("Refresh list", function()
