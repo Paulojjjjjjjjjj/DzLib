@@ -49,38 +49,68 @@ function MakeDraggable(topbarobject, object)
 		end;
 	end);
 end;
-local ScreenGui = Instance.new("ScreenGui");
-ScreenGui.Name = "DzHubMenuButton";
-ScreenGui.Parent = game.CoreGui;
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
-local OutlineButton = Instance.new("Frame");
-OutlineButton.Name = "OutlineButton";
-OutlineButton.Parent = ScreenGui;
-OutlineButton.ClipsDescendants = true;
-OutlineButton.BackgroundColor3 = _G.Dark;
-OutlineButton.BackgroundTransparency = 0;
-OutlineButton.Position = UDim2.new(0, 10, 0, 10);
-OutlineButton.Size = UDim2.new(0, 50, 0, 50);
-CreateRounded(OutlineButton, 12);
-local ImageButton = Instance.new("ImageButton");
-ImageButton.Parent = OutlineButton;
-ImageButton.Position = UDim2.new(0.5, 0, 0.5, 0);
-ImageButton.Size = UDim2.new(0, 40, 0, 40);
-ImageButton.AnchorPoint = Vector2.new(0.5, 0.5);
-ImageButton.BackgroundColor3 = _G.Dark;
-ImageButton.ImageColor3 = Color3.fromRGB(250, 250, 250);
-ImageButton.ImageTransparency = 0;
-ImageButton.BackgroundTransparency = 0;
-ImageButton.Image = "rbxassetid://86862177543059";
-ImageButton.AutoButtonColor = false;
-MakeDraggable(ImageButton, OutlineButton);
-CreateRounded(ImageButton, 10);
-ImageButton.MouseButton1Click:Connect(function()
-	local dzHub = game.CoreGui:FindFirstChild("DzHub");
-	if dzHub then
-		dzHub.Enabled = not dzHub.Enabled;
+-- Variável global para controlar se o botão de toggle deve ser criado
+-- Se não foi definido, verifica nas configurações salvas
+if _G.DzLib_ShowToggleButton == nil then
+	-- Tentar carregar configuração salva
+	if readfile and isfile and isfolder then
+		if isfolder("DzHub") and isfolder("DzHub/Library/") then
+			local playerName = game.Players.LocalPlayer.Name;
+			if isfile("DzHub/Library/" .. playerName .. ".json") then
+				local success, config = pcall(function()
+					return game:GetService("HttpService"):JSONDecode(readfile("DzHub/Library/" .. playerName .. ".json"));
+				end);
+				if success and config and config.ShowToggleButton ~= nil then
+					_G.DzLib_ShowToggleButton = config.ShowToggleButton;
+				else
+					_G.DzLib_ShowToggleButton = true;
+				end;
+			else
+				_G.DzLib_ShowToggleButton = true;
+			end;
+		else
+			_G.DzLib_ShowToggleButton = true;
+		end;
+	else
+		_G.DzLib_ShowToggleButton = true;
 	end;
-end);
+end;
+
+-- Criar botão de toggle apenas se habilitado
+if _G.DzLib_ShowToggleButton then
+	local ScreenGui = Instance.new("ScreenGui");
+	ScreenGui.Name = "DzHubMenuButton";
+	ScreenGui.Parent = game.CoreGui;
+	ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+	local OutlineButton = Instance.new("Frame");
+	OutlineButton.Name = "OutlineButton";
+	OutlineButton.Parent = ScreenGui;
+	OutlineButton.ClipsDescendants = true;
+	OutlineButton.BackgroundColor3 = _G.Dark;
+	OutlineButton.BackgroundTransparency = 0;
+	OutlineButton.Position = UDim2.new(0, 10, 0, 10);
+	OutlineButton.Size = UDim2.new(0, 50, 0, 50);
+	CreateRounded(OutlineButton, 12);
+	local ImageButton = Instance.new("ImageButton");
+	ImageButton.Parent = OutlineButton;
+	ImageButton.Position = UDim2.new(0.5, 0, 0.5, 0);
+	ImageButton.Size = UDim2.new(0, 40, 0, 40);
+	ImageButton.AnchorPoint = Vector2.new(0.5, 0.5);
+	ImageButton.BackgroundColor3 = _G.Dark;
+	ImageButton.ImageColor3 = Color3.fromRGB(250, 250, 250);
+	ImageButton.ImageTransparency = 0;
+	ImageButton.BackgroundTransparency = 0;
+	ImageButton.Image = "rbxassetid://86862177543059";
+	ImageButton.AutoButtonColor = false;
+	MakeDraggable(ImageButton, OutlineButton);
+	CreateRounded(ImageButton, 10);
+	ImageButton.MouseButton1Click:Connect(function()
+		local dzHub = game.CoreGui:FindFirstChild("DzHub");
+		if dzHub then
+			dzHub.Enabled = not dzHub.Enabled;
+		end;
+	end);
+end;
 local NotificationFrame = Instance.new("ScreenGui");
 NotificationFrame.Name = "NotificationFrame";
 NotificationFrame.Parent = game.CoreGui;
@@ -176,7 +206,8 @@ function Update:Loaded()
 	-- Tela de loading removida - função vazia para compatibilidade
 end;
 local SettingsLib = {
-	SaveSettings = true
+	SaveSettings = true,
+	ShowToggleButton = true
 };
 (getgenv()).LoadConfig = function()
 	if readfile and writefile and isfile and isfolder then
@@ -909,6 +940,56 @@ function Update:Window(Config)
 	CreateCheckbox("Save Settings", SettingsLib.SaveSettings, function(state)
 		SettingsLib.SaveSettings = state;
 		(getgenv()).SaveConfig();
+	end);
+	CreateCheckbox("Show Toggle Button", SettingsLib.ShowToggleButton, function(state)
+		SettingsLib.ShowToggleButton = state;
+		(getgenv()).SaveConfig();
+		local menuButton = game.CoreGui:FindFirstChild("DzHubMenuButton");
+		if state then
+			-- Criar botão se não existir
+			if not menuButton then
+				local ScreenGui = Instance.new("ScreenGui");
+				ScreenGui.Name = "DzHubMenuButton";
+				ScreenGui.Parent = game.CoreGui;
+				ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+				local OutlineButton = Instance.new("Frame");
+				OutlineButton.Name = "OutlineButton";
+				OutlineButton.Parent = ScreenGui;
+				OutlineButton.ClipsDescendants = true;
+				OutlineButton.BackgroundColor3 = _G.Dark;
+				OutlineButton.BackgroundTransparency = 0;
+				OutlineButton.Position = UDim2.new(0, 10, 0, 10);
+				OutlineButton.Size = UDim2.new(0, 50, 0, 50);
+				CreateRounded(OutlineButton, 12);
+				local ImageButton = Instance.new("ImageButton");
+				ImageButton.Parent = OutlineButton;
+				ImageButton.Position = UDim2.new(0.5, 0, 0.5, 0);
+				ImageButton.Size = UDim2.new(0, 40, 0, 40);
+				ImageButton.AnchorPoint = Vector2.new(0.5, 0.5);
+				ImageButton.BackgroundColor3 = _G.Dark;
+				ImageButton.ImageColor3 = Color3.fromRGB(250, 250, 250);
+				ImageButton.ImageTransparency = 0;
+				ImageButton.BackgroundTransparency = 0;
+				ImageButton.Image = "rbxassetid://86862177543059";
+				ImageButton.AutoButtonColor = false;
+				MakeDraggable(ImageButton, OutlineButton);
+				CreateRounded(ImageButton, 10);
+				ImageButton.MouseButton1Click:Connect(function()
+					local dzHub = game.CoreGui:FindFirstChild("DzHub");
+					if dzHub then
+						dzHub.Enabled = not dzHub.Enabled;
+					end;
+				end);
+			end
+			if menuButton then
+				menuButton.Enabled = true;
+			end;
+		else
+			-- Esconder botão
+			if menuButton then
+				menuButton.Enabled = false;
+			end;
+		end;
 	end);
 	CreateButton("Reset Config", function()
 		if isfolder("DzHub") then
