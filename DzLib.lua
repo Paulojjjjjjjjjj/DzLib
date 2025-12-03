@@ -2006,7 +2006,30 @@ function Update:Window(Config)
 			end);
 			return dropfunc;
 		end;
-		function main:Slider(text, min, max, set, callback)
+		function main:Slider(text, min, max, set, callback, rounding)
+			-- rounding: número de casas decimais (nil ou 0 = inteiros, 1 = 1 decimal, 2 = 2 decimais, etc)
+			local roundingPlaces = rounding or 0;
+			if roundingPlaces == nil then roundingPlaces = 0 end;
+			
+			-- Função para arredondar baseado no rounding
+			local function roundValue(value)
+				if roundingPlaces == 0 then
+					return math.floor(value + 0.5); -- Arredonda para inteiro
+				else
+					local multiplier = 10 ^ roundingPlaces;
+					return math.floor(value * multiplier + 0.5) / multiplier;
+				end;
+			end;
+			
+			-- Função para formatar o valor para exibição
+			local function formatValue(value)
+				if roundingPlaces == 0 then
+					return tostring(math.floor(value + 0.5));
+				else
+					return string.format("%." .. roundingPlaces .. "f", roundValue(value));
+				end;
+			end;
+			
 			local Slider = Instance.new("Frame");
 			local slidercorner = Instance.new("UICorner");
 			local sliderr = Instance.new("Frame");
@@ -2062,7 +2085,7 @@ function Update:Window(Config)
 			ValueText.Position = UDim2.new(0, -38, 0.5, 0);
 			ValueText.Size = UDim2.new(0, 30, 0, 30);
 			ValueText.Font = Enum.Font.GothamMedium;
-			ValueText.Text = set;
+			ValueText.Text = formatValue(set);
 			ValueText.AnchorPoint = Vector2.new(0, 0.5);
 			ValueText.TextColor3 = Color3.fromRGB(255, 255, 255);
 			ValueText.TextSize = 12;
@@ -2078,7 +2101,6 @@ function Update:Window(Config)
 			bar1.Parent = bar;
 			bar1.BackgroundColor3 = _G.Third;
 			bar1.BackgroundTransparency = 0;
-			bar1.Size = UDim2.new(set / max, 0, 0, 4);
 			bar1corner.CornerRadius = UDim.new(0, 5);
 			bar1corner.Name = "bar1corner";
 			bar1corner.Parent = bar1;
@@ -2098,13 +2120,10 @@ function Update:Window(Config)
 			valuecorner.Parent = slidervalue;
 			local mouse = game.Players.LocalPlayer:GetMouse();
 			local uis = game:GetService("UserInputService");
-			if Value == nil then
-				Value = set;
-				-- Não chamar callback durante inicialização - apenas definir valor
-				-- pcall(function()
-				-- 	callback(Value);
-				-- end);
-			end;
+			local Value = roundValue(set);
+			local initialPercentage = (Value - tonumber(min)) / (tonumber(max) - tonumber(min));
+			bar1.Size = UDim2.new(0, initialPercentage * 100, 0, 4);
+			circlebar.Position = UDim2.new(0, initialPercentage * 100 - 5, 0, -5);
 			local Dragging = false;
 			circlebar.InputBegan:Connect(function(Input)
 				if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
@@ -2123,28 +2142,35 @@ function Update:Window(Config)
 			end);
 			UserInputService.InputChanged:Connect(function(Input)
 				if Dragging and (Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch) then
-					Value = math.floor((tonumber(max) - tonumber(min)) / 100 * bar1.AbsoluteSize.X + tonumber(min)) or 0;
+					local barPosition = bar.AbsolutePosition.X;
+					local barSize = bar.AbsoluteSize.X;
+					local mouseX = Input.Position.X;
+					local percentage = math.clamp((mouseX - barPosition) / barSize, 0, 1);
+					local rawValue = tonumber(min) + (tonumber(max) - tonumber(min)) * percentage;
+					Value = roundValue(rawValue);
 					pcall(function()
 						callback(Value);
 					end);
-					ValueText.Text = Value;
-					bar1.Size = UDim2.new(0, math.clamp(Input.Position.X - bar1.AbsolutePosition.X, 0, 100), 0, 4);
-					circlebar.Position = UDim2.new(0, math.clamp(Input.Position.X - bar1.AbsolutePosition.X - 5, 0, 100), 0, -5);
+					ValueText.Text = formatValue(Value);
+					bar1.Size = UDim2.new(0, percentage * 100, 0, 4);
+					circlebar.Position = UDim2.new(0, percentage * 100 - 5, 0, -5);
 				end;
 			end);
 			local sliderfunc = {};
 			sliderfunc.Value = set;
 			function sliderfunc:Set(newValue)
 				-- Define um novo valor para o slider (compatibilidade)
-				local clampedValue = math.clamp(tonumber(newValue) or set, min, max);
-				local percentage = (clampedValue - min) / (max - min);
-				Value = clampedValue;
-				self.Value = clampedValue;
-				ValueText.Text = tostring(clampedValue);
+				local rawValue = tonumber(newValue) or set;
+				local clampedValue = math.clamp(rawValue, min, max);
+				local roundedValue = roundValue(clampedValue);
+				local percentage = (roundedValue - min) / (max - min);
+				Value = roundedValue;
+				self.Value = roundedValue;
+				ValueText.Text = formatValue(roundedValue);
 				bar1.Size = UDim2.new(0, percentage * 100, 0, 4);
 				circlebar.Position = UDim2.new(0, percentage * 100 - 5, 0, -5);
 				pcall(function()
-					callback(clampedValue);
+					callback(roundedValue);
 				end);
 			end;
 			function sliderfunc:GetValue()
